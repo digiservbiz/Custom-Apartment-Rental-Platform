@@ -1,0 +1,29 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "This project is a web-based apartment rental platform connecting apartment owners, agents, and renters in a coastal city. The system aims to streamline apartment listing, availability checks via WhatsApp, booking, payments with commission fees, manual KYC for owners and agents, and moderated renter reviews.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/digiservbiz/Custom-Apartment-Rental-Platform.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/digiservbiz/Custom-Apartment-Rental-Platform/issues"
+  },
+  "homepage": "https://github.com/digiservbiz/Custom-Apartment-Rental-Platform#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.17.1"
+  }
+}
