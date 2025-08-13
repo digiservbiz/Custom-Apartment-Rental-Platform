@@ -19,7 +19,10 @@ app.use(cors());
 
 // Mount routers
 const auth = require('./routes/auth');
+const apartments = require('./routes/apartments');
+
 app.use('/api/v1/auth', auth);
+app.use('/api/v1/apartments', apartments);
 
 // Define a simple route
 app.get('/', (req, res) => {
