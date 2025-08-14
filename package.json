@@ -4,7 +4,7 @@
   "description": "This project is a web-based apartment rental platform connecting apartment owners, agents, and renters in a coastal city. The system aims to streamline apartment listing, availability checks via WhatsApp, booking, payments with commission fees, manual KYC for owners and agents, and moderated renter reviews.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"No tests available\""
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",

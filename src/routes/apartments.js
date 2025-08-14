@@ -5,6 +5,7 @@ const {
   createApartment,
   updateApartment,
   deleteApartment,
+  checkAvailability,
 } = require('../controllers/apartmentController');
 
 const router = express.Router();
@@ -21,5 +22,9 @@ router
   .get(getApartment)
   .put(protect, authorize('owner', 'agent', 'admin'), updateApartment)
   .delete(protect, authorize('owner', 'agent', 'admin'), deleteApartment);
+
+router
+    .route('/:id/check-availability')
+    .post(protect, authorize('renter', 'admin'), checkAvailability);
 
 module.exports = router;

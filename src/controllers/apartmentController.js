@@ -13,6 +13,36 @@ exports.getApartments = async (req, res, next) => {
   }
 };
 
+// @desc    Check apartment availability
+// @route   POST /api/v1/apartments/:id/check-availability
+// @access  Private (Renters)
+exports.checkAvailability = async (req, res, next) => {
+  try {
+    const apartment = await Apartment.findById(req.params.id).populate('manager');
+
+    if (!apartment) {
+      return res.status(404).json({ success: false, message: 'Apartment not found' });
+    }
+
+    if (!apartment.manager.phoneNumber) {
+        return res.status(400).json({ success: false, message: 'Manager has no phone number' });
+    }
+
+    const message = `A renter is interested in your apartment ${apartment.location} (ID: ${apartment._id}). Is it available? Please reply with 'Yes ${apartment._id}' or 'No ${apartment._id}'.`;
+
+    // In a real app, you would use a proper WhatsApp service
+    const { sendMessage } = require('../services/whatsappService');
+    await sendMessage(apartment.manager.phoneNumber, message);
+
+    apartment.status = 'Pending Confirmation';
+    await apartment.save();
+
+    res.status(200).json({ success: true, data: 'Availability check initiated. Please wait for confirmation.' });
+  } catch (error) {
+    res.status(400).json({ success: false, message: error.message });
+  }
+};
+
 // @desc    Get single apartment
 // @route   GET /api/v1/apartments/:id
 // @access  Public

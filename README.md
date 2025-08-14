@@ -42,7 +42,7 @@ This project is a web-based apartment rental platform connecting apartment owner
 ## Technical Requirements
 
 - **Backend:** RESTful API using Node.js/Express.
-- **Database:** MongoDB.
+- **Database:** PostgreSQL or MySQL.
 - **Frontend:** React for a responsive UI.
 - **Authentication:** JWT with role-based access control.
 - **WhatsApp Integration:** Use WhatsApp Business API or Twilio API to send/receive availability queries.
@@ -55,7 +55,7 @@ This project is a web-based apartment rental platform connecting apartment owner
 ### Prerequisites
 - Node.js
 - npm or yarn
-- MongoDB
+- PostgreSQL or MySQL
 
 ### Installation
 1. Clone the repository:
