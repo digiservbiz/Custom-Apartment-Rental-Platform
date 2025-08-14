@@ -21,10 +21,12 @@ app.use(cors());
 const auth = require('./routes/auth');
 const apartments = require('./routes/apartments');
 const whatsapp = require('./routes/whatsapp');
+const bookings = require('./routes/bookings');
 
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/apartments', apartments);
 app.use('/api/v1/whatsapp', whatsapp);
+app.use('/api/v1/bookings', bookings);
 
 // Define a simple route
 app.get('/', (req, res) => {

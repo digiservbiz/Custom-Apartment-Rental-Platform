@@ -1,5 +1,6 @@
 import React from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const ApartmentCard = ({ apartment }) => {
     const checkAvailability = async () => {
@@ -29,6 +30,9 @@ const ApartmentCard = ({ apartment }) => {
       <p>{apartment.description}</p>
       <p>Status: {apartment.status}</p>
       <button onClick={checkAvailability}>Check Availability</button>
+      <Link to={`/booking/${apartment._id}`}>
+        <button>Book Now</button>
+      </Link>
     </div>
   );
 };
