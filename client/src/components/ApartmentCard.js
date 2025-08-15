@@ -3,7 +3,9 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 const ApartmentCard = ({ apartment }) => {
-    const checkAvailability = async () => {
+    const checkAvailability = async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
         try {
             // You need to get the token from somewhere (e.g., localStorage)
             const token = localStorage.getItem('token');
@@ -22,18 +24,20 @@ const ApartmentCard = ({ apartment }) => {
     };
 
   return (
-    <div style={{ border: '1px solid #ccc', borderRadius: '5px', padding: '10px', margin: '10px' }}>
-      <img src={apartment.photos[0]} alt={apartment.location} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
-      <h3>{apartment.location}</h3>
-      <p>Price per night: ${apartment.pricePerNight}</p>
-      <p>Max guests: {apartment.maxGuests}</p>
-      <p>{apartment.description}</p>
-      <p>Status: {apartment.status}</p>
-      <button onClick={checkAvailability}>Check Availability</button>
-      <Link to={`/booking/${apartment._id}`}>
-        <button>Book Now</button>
-      </Link>
-    </div>
+    <Link to={`/apartments/${apartment._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+        <div style={{ border: '1px solid #ccc', borderRadius: '5px', padding: '10px', margin: '10px' }}>
+        <img src={apartment.photos[0]} alt={apartment.location} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+        <h3>{apartment.location}</h3>
+        <p>Price per night: ${apartment.pricePerNight}</p>
+        <p>Max guests: {apartment.maxGuests}</p>
+        <p>{apartment.description}</p>
+        <p>Status: {apartment.status}</p>
+        <button onClick={checkAvailability}>Check Availability</button>
+        <Link to={`/booking/${apartment._id}`}>
+            <button>Book Now</button>
+        </Link>
+        </div>
+    </Link>
   );
 };
 

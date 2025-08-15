@@ -6,6 +6,9 @@ import RegisterPage from './pages/RegisterPage';
 import ApartmentListPage from './pages/ApartmentListPage';
 import CreateApartmentPage from './pages/CreateApartmentPage';
 import BookingPage from './pages/BookingPage';
+import MyBookingsPage from './pages/MyBookingsPage';
+import LeaveReviewPage from './pages/LeaveReviewPage';
+import ApartmentDetailsPage from './pages/ApartmentDetailsPage';
 import './App.css';
 
 function App() {
@@ -17,8 +20,11 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/apartments" element={<ApartmentListPage />} />
+          <Route path="/apartments/:id" element={<ApartmentDetailsPage />} />
           <Route path="/create-apartment" element={<CreateApartmentPage />} />
           <Route path="/booking/:id" element={<BookingPage />} />
+          <Route path="/my-bookings" element={<MyBookingsPage />} />
+          <Route path="/review/:apartmentId" element={<LeaveReviewPage />} />
         </Routes>
       </div>
     </Router>

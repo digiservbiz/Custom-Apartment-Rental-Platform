@@ -12,6 +12,11 @@ const router = express.Router();
 
 const { protect, authorize } = require('../middleware/authMiddleware');
 
+// Re-route into other resource routers
+const reviewRouter = require('./reviews');
+
+router.use('/:apartmentId/reviews', reviewRouter);
+
 router
   .route('/')
   .get(getApartments)
