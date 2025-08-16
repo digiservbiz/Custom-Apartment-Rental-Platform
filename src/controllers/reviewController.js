@@ -27,12 +27,26 @@ exports.createReview = async (req, res, next) => {
   }
 };
 
-// @desc    Get all reviews for an apartment
+// @desc    Get all reviews
+// @route   GET /api/v1/reviews
 // @route   GET /api/v1/apartments/:apartmentId/reviews
 // @access  Public
 exports.getReviews = async (req, res, next) => {
     try {
-        const reviews = await Review.find({ apartment: req.params.apartmentId, status: 'Approved' }).populate('renter', 'name');
+        let query;
+
+        if (req.params.apartmentId) {
+            query = Review.find({ apartment: req.params.apartmentId, status: 'Approved' });
+        } else {
+            // If admin, get all reviews, otherwise only approved ones
+            if (req.user && req.user.role === 'admin') {
+                query = Review.find();
+            } else {
+                query = Review.find({ status: 'Approved' });
+            }
+        }
+
+        const reviews = await query.populate('renter', 'name').populate('apartment', 'location');
         res.status(200).json({ success: true, count: reviews.length, data: reviews });
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });

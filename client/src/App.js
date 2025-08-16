@@ -9,6 +9,12 @@ import BookingPage from './pages/BookingPage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import LeaveReviewPage from './pages/LeaveReviewPage';
 import ApartmentDetailsPage from './pages/ApartmentDetailsPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
+import AdminRoute from './components/AdminRoute';
+import UserListPage from './pages/admin/UserListPage';
+import AdminApartmentListPage from './pages/admin/ApartmentListPage';
+import AdminReviewListPage from './pages/admin/ReviewListPage';
+import AdminKYCListPage from './pages/admin/KYCListPage';
 import './App.css';
 
 function App() {
@@ -25,6 +31,46 @@ function App() {
           <Route path="/booking/:id" element={<BookingPage />} />
           <Route path="/my-bookings" element={<MyBookingsPage />} />
           <Route path="/review/:apartmentId" element={<LeaveReviewPage />} />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <AdminRoute>
+                <AdminDashboardPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <AdminRoute>
+                <UserListPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/apartments"
+            element={
+              <AdminRoute>
+                <AdminApartmentListPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/reviews"
+            element={
+              <AdminRoute>
+                <AdminReviewListPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/kyc"
+            element={
+              <AdminRoute>
+                <AdminKYCListPage />
+              </AdminRoute>
+            }
+          />
         </Routes>
       </div>
     </Router>
