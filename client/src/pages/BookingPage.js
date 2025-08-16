@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
+import Spinner from '../components/Spinner';
+import Alert from '../components/Alert';
 
 const BookingPage = () => {
   const { id } = useParams();
@@ -8,11 +10,20 @@ const BookingPage = () => {
   const [checkInDate, setCheckInDate] = useState('');
   const [checkOutDate, setCheckOutDate] = useState('');
   const [totalPrice, setTotalPrice] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   useEffect(() => {
     const fetchApartment = async () => {
-      const { data } = await axios.get(`/api/v1/apartments/${id}`);
-      setApartment(data.data);
+      try {
+        const { data } = await axios.get(`/api/v1/apartments/${id}`);
+        setApartment(data.data);
+        setLoading(false);
+      } catch (err) {
+        setError('Error fetching apartment details');
+        setLoading(false);
+      }
     };
 
     fetchApartment();
@@ -24,12 +35,20 @@ const BookingPage = () => {
       const firstDate = new Date(checkInDate);
       const secondDate = new Date(checkOutDate);
       const diffDays = Math.round(Math.abs((firstDate - secondDate) / oneDay));
-      setTotalPrice(diffDays * apartment.pricePerNight);
+      if (diffDays > 0) {
+        setTotalPrice(diffDays * apartment.pricePerNight);
+      } else {
+        setTotalPrice(0);
+      }
     }
   }, [checkInDate, checkOutDate, apartment]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    if (totalPrice === 0) {
+        setError('Check-out date must be after check-in date');
+        return;
+    }
     const newBooking = {
       apartment: id,
       checkInDate,
@@ -45,43 +64,47 @@ const BookingPage = () => {
         },
       };
       const body = JSON.stringify(newBooking);
-      const res = await axios.post('/api/v1/bookings', body, config);
-      alert('Booking successful!');
-      // Redirect to my bookings page or somewhere else
+      await axios.post('/api/v1/bookings', body, config);
+      setSuccess('Booking successful!');
+      setError('');
     } catch (err) {
-      console.error(err.response.data);
-      alert('Booking failed');
+      setError('Booking failed');
+      setSuccess('');
     }
   };
 
-  if (!apartment) {
-    return <div>Loading...</div>;
+  if (loading) {
+    return <Spinner />;
   }
 
   return (
     <div>
-      <h1>Book {apartment.location}</h1>
+      {apartment && <h1>Book {apartment.location}</h1>}
+      {error && <Alert type="danger" message={error} />}
+      {success && <Alert type="success" message={success} />}
       <form onSubmit={onSubmit}>
-        <div>
+        <div className="form-group">
           <label>Check-in Date</label>
           <input
             type="date"
             value={checkInDate}
             onChange={(e) => setCheckInDate(e.target.value)}
+            className="form-control"
             required
           />
         </div>
-        <div>
+        <div className="form-group">
           <label>Check-out Date</label>
           <input
             type="date"
             value={checkOutDate}
             onChange={(e) => setCheckOutDate(e.target.value)}
+            className="form-control"
             required
           />
         </div>
         {totalPrice > 0 && <h2>Total Price: ${totalPrice}</h2>}
-        <button type="submit">Confirm & Pay</button>
+        <button type="submit" className="btn btn-primary mt-3">Confirm & Pay</button>
       </form>
     </div>
   );

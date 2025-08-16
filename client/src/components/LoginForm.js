@@ -1,11 +1,13 @@
 import React, { useState, useContext } from 'react';
 import AuthContext from '../context/AuthContext';
+import Alert from './Alert';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+  const [error, setError] = useState('');
   const { login } = useContext(AuthContext);
 
   const { email, password } = formData;
@@ -13,13 +15,18 @@ const LoginForm = () => {
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    login(email, password);
+    try {
+      await login(email, password);
+    } catch (err) {
+      setError('Invalid credentials');
+    }
   };
 
   return (
     <form onSubmit={onSubmit}>
+      {error && <Alert type="danger" message={error} />}
       <div className="form-group">
         <label>Email Address</label>
         <input

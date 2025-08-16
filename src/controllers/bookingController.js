@@ -6,9 +6,11 @@ const { sendMessage } = require('../services/whatsappService');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 
-// @desc    Create new booking
-// @route   POST /api/v1/bookings
-// @access  Private (Renters)
+/**
+ * @desc    Create new booking
+ * @route   POST /api/v1/bookings
+ * @access  Private (Renters)
+ */
 exports.createBooking = asyncHandler(async (req, res, next) => {
     req.body.renter = req.user.id;
 
@@ -55,25 +57,31 @@ exports.createBooking = asyncHandler(async (req, res, next) => {
     res.status(201).json({ success: true, data: booking });
 });
 
-// @desc    Get all bookings
-// @route   GET /api/v1/bookings
-// @access  Private (Admin)
+/**
+ * @desc    Get all bookings
+ * @route   GET /api/v1/bookings
+ * @access  Private (Admin)
+ */
 exports.getBookings = asyncHandler(async (req, res, next) => {
     const bookings = await Booking.find().populate('apartment', 'location').populate('renter', 'name email');
     res.status(200).json({ success: true, count: bookings.length, data: bookings });
 });
 
-// @desc    Get my bookings
-// @route   GET /api/v1/bookings/mybookings
-// @access  Private
+/**
+ * @desc    Get my bookings
+ * @route   GET /api/v1/bookings/mybookings
+ * @access  Private
+ */
 exports.getMyBookings = asyncHandler(async (req, res, next) => {
     const bookings = await Booking.find({ renter: req.user.id }).populate('apartment', 'location');
     res.status(200).json({ success: true, count: bookings.length, data: bookings });
 });
 
-// @desc    Get single booking
-// @route   GET /api/v1/bookings/:id
-// @access  Private
+/**
+ * @desc    Get single booking
+ * @route   GET /api/v1/bookings/:id
+ * @access  Private
+ */
 exports.getBooking = asyncHandler(async (req, res, next) => {
     const booking = await Booking.findById(req.params.id).populate('apartment', 'location').populate('renter', 'name email');
     if (!booking) {

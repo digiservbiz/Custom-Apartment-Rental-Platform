@@ -1,27 +1,36 @@
 import React, { useState, useContext } from 'react';
 import AuthContext from '../context/AuthContext';
+import Alert from './Alert';
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
+    password2: '',
     role: 'renter',
   });
+  const [error, setError] = useState('');
   const { register } = useContext(AuthContext);
 
-  const { name, email, password, role } = formData;
+  const { name, email, password, password2, role } = formData;
 
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const onSubmit = (e) => {
     e.preventDefault();
-    register(name, email, password, role);
+    if (password !== password2) {
+      setError('Passwords do not match');
+    } else {
+      setError('');
+      register(name, email, password, role);
+    }
   };
 
   return (
     <form onSubmit={onSubmit}>
+        {error && <Alert type="danger" message={error} />}
       <div className="form-group">
         <label>Name</label>
         <input
@@ -52,6 +61,19 @@ const RegisterForm = () => {
           value={password}
           onChange={onChange}
           className="form-control"
+          minLength="6"
+          required
+        />
+      </div>
+      <div className="form-group">
+        <label>Confirm Password</label>
+        <input
+          type="password"
+          name="password2"
+          value={password2}
+          onChange={onChange}
+          className="form-control"
+          minLength="6"
           required
         />
       </div>

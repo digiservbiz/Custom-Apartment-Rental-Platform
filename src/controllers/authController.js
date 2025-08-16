@@ -3,9 +3,11 @@ const jwt = require('jsonwebtoken');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 
-// @desc    Register user
-// @route   POST /api/v1/auth/register
-// @access  Public
+/**
+ * @desc    Register user
+ * @route   POST /api/v1/auth/register
+ * @access  Public
+ */
 exports.register = asyncHandler(async (req, res, next) => {
     const { name, email, password, role } = req.body;
 
@@ -20,9 +22,11 @@ exports.register = asyncHandler(async (req, res, next) => {
     sendTokenResponse(user, 200, res);
 });
 
-// @desc    Login user
-// @route   POST /api/v1/auth/login
-// @access  Public
+/**
+ * @desc    Login user
+ * @route   POST /api/v1/auth/login
+ * @access  Public
+ */
 exports.login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
@@ -48,9 +52,11 @@ exports.login = asyncHandler(async (req, res, next) => {
   sendTokenResponse(user, 200, res);
 });
 
-// @desc    Get current logged in user
-// @route   POST /api/v1/auth/me
-// @access  Private
+/**
+ * @desc    Get current logged in user
+ * @route   POST /api/v1/auth/me
+ * @access  Private
+ */
 exports.getMe = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user.id);
 
@@ -61,7 +67,9 @@ exports.getMe = asyncHandler(async (req, res, next) => {
 });
 
 
-// Get token from model, create cookie and send response
+/**
+ * @desc    Get token from model, create cookie and send response
+ */
 const sendTokenResponse = (user, statusCode, res) => {
   // Create token
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {

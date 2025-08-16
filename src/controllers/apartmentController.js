@@ -3,9 +3,11 @@ const User = require('../models/User');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 
-// @desc    Get all apartments
-// @route   GET /api/v1/apartments
-// @access  Public
+/**
+ * @desc    Get all apartments
+ * @route   GET /api/v1/apartments
+ * @access  Public
+ */
 exports.getApartments = asyncHandler(async (req, res, next) => {
     let query;
 
@@ -32,13 +34,42 @@ exports.getApartments = asyncHandler(async (req, res, next) => {
         query = query.find({ location: { $regex: req.query.keyword, $options: 'i' } });
     }
 
+    // Pagination
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const total = await Apartment.countDocuments(JSON.parse(queryStr));
+
+    query = query.skip(startIndex).limit(limit);
+
     const apartments = await query.populate('manager', 'name email');
-    res.status(200).json({ success: true, count: apartments.length, data: apartments });
+
+    // Pagination result
+    const pagination = {};
+
+    if (endIndex < total) {
+        pagination.next = {
+            page: page + 1,
+            limit,
+        };
+    }
+
+    if (startIndex > 0) {
+        pagination.prev = {
+            page: page - 1,
+            limit,
+        };
+    }
+
+    res.status(200).json({ success: true, count: apartments.length, pagination, data: apartments });
 });
 
-// @desc    Get single apartment
-// @route   GET /api/v1/apartments/:id
-// @access  Public
+/**
+ * @desc    Get single apartment
+ * @route   GET /api/v1/apartments/:id
+ * @access  Public
+ */
 exports.getApartment = asyncHandler(async (req, res, next) => {
     const apartment = await Apartment.findById(req.params.id).populate('manager', 'name email');
     if (!apartment) {
@@ -47,9 +78,11 @@ exports.getApartment = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, data: apartment });
 });
 
-// @desc    Create new apartment
-// @route   POST /api/v1/apartments
-// @access  Private (Owners, Agents)
+/**
+ * @desc    Create new apartment
+ * @route   POST /api/v1/apartments
+ * @access  Private (Owners, Agents)
+ */
 exports.createApartment = asyncHandler(async (req, res, next) => {
     // Add user to req.body
     req.body.manager = req.user.id;
@@ -58,9 +91,11 @@ exports.createApartment = asyncHandler(async (req, res, next) => {
     res.status(201).json({ success: true, data: apartment });
 });
 
-// @desc    Update apartment
-// @route   PUT /api/v1/apartments/:id
-// @access  Private (Owners, Agents)
+/**
+ * @desc    Update apartment
+ * @route   PUT /api/v1/apartments/:id
+ * @access  Private (Owners, Agents)
+ */
 exports.updateApartment = asyncHandler(async (req, res, next) => {
     let apartment = await Apartment.findById(req.params.id);
 
@@ -81,9 +116,11 @@ exports.updateApartment = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, data: apartment });
 });
 
-// @desc    Delete apartment
-// @route   DELETE /api/v1/apartments/:id
-// @access  Private (Owners, Agents)
+/**
+ * @desc    Delete apartment
+ * @route   DELETE /api/v1/apartments/:id
+ * @access  Private (Owners, Agents)
+ */
 exports.deleteApartment = asyncHandler(async (req, res, next) => {
     const apartment = await Apartment.findById(req.params.id);
 
@@ -101,9 +138,11 @@ exports.deleteApartment = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, data: {} });
 });
 
-// @desc    Check apartment availability
-// @route   POST /api/v1/apartments/:id/check-availability
-// @access  Private (Renters)
+/**
+ * @desc    Check apartment availability
+ * @route   POST /api/v1/apartments/:id/check-availability
+ * @access  Private (Renters)
+ */
 exports.checkAvailability = asyncHandler(async (req, res, next) => {
     const apartment = await Apartment.findById(req.params.id).populate('manager');
 
@@ -125,4 +164,14 @@ exports.checkAvailability = asyncHandler(async (req, res, next) => {
     await apartment.save();
 
     res.status(200).json({ success: true, data: 'Availability check initiated. Please wait for confirmation.' });
+});
+
+/**
+ * @desc    Get my apartments
+ * @route   GET /api/v1/apartments/myapartments
+ * @access  Private (Owners, Agents)
+ */
+exports.getMyApartments = asyncHandler(async (req, res, next) => {
+    const apartments = await Apartment.find({ manager: req.user.id });
+    res.status(200).json({ success: true, count: apartments.length, data: apartments });
 });

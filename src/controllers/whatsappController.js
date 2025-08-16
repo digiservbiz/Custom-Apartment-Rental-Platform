@@ -2,9 +2,11 @@ const Apartment = require('../models/Apartment');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 
-// @desc    Handle incoming WhatsApp messages
-// @route   POST /api/v1/whatsapp/webhook
-// @access  Public (webhook from WhatsApp)
+/**
+ * @desc    Handle incoming WhatsApp messages
+ * @route   POST /api/v1/whatsapp/webhook
+ * @access  Public (webhook from WhatsApp)
+ */
 exports.handleIncomingMessage = asyncHandler(async (req, res, next) => {
     const { from, message } = req.body; // Assuming the webhook sends from and message
 

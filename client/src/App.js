@@ -15,7 +15,9 @@ import UserListPage from './pages/admin/UserListPage';
 import AdminApartmentListPage from './pages/admin/ApartmentListPage';
 import AdminReviewListPage from './pages/admin/ReviewListPage';
 import AdminKYCListPage from './pages/admin/KYCListPage';
+import MyApartmentsPage from './pages/MyApartmentsPage';
 import Header from './components/Header';
+import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
 function App() {
@@ -34,6 +36,14 @@ function App() {
           <Route path="/booking/:id" element={<BookingPage />} />
           <Route path="/my-bookings" element={<MyBookingsPage />} />
           <Route path="/review/:apartmentId" element={<LeaveReviewPage />} />
+          <Route
+            path="/my-apartments"
+            element={
+              <ProtectedRoute roles={['owner', 'agent', 'admin']}>
+                <MyApartmentsPage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/admin/dashboard"
             element={

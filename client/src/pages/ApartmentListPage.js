@@ -11,17 +11,21 @@ const ApartmentListPage = () => {
   const [keyword, setKeyword] = useState('');
   const [price, setPrice] = useState({ min: '', max: '' });
   const [guests, setGuests] = useState('');
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({});
 
-  const fetchApartments = async () => {
+  const fetchApartments = async (pageNumber = 1) => {
     try {
       setLoading(true);
-      let url = `/api/v1/apartments?keyword=${keyword}`;
+      let url = `/api/v1/apartments?keyword=${keyword}&page=${pageNumber}`;
       if (price.min) url += `&pricePerNight[gte]=${price.min}`;
       if (price.max) url += `&pricePerNight[lte]=${price.max}`;
       if (guests) url += `&maxGuests[gte]=${guests}`;
 
       const { data } = await axios.get(url);
       setApartments(data.data);
+      setPagination(data.pagination);
+      setPage(pageNumber);
       setLoading(false);
     } catch (err) {
       setError('Error fetching apartments');
@@ -92,13 +96,27 @@ const ApartmentListPage = () => {
       ) : error ? (
         <Alert type="danger" message={error} />
       ) : (
-        <div className="row">
-          {apartments.map((apartment) => (
-            <div className="col-md-4" key={apartment._id}>
-              <ApartmentCard apartment={apartment} />
+        <>
+            <div className="row">
+            {apartments.map((apartment) => (
+                <div className="col-md-4" key={apartment._id}>
+                <ApartmentCard apartment={apartment} />
+                </div>
+            ))}
             </div>
-          ))}
-        </div>
+            <div className="d-flex justify-content-center mt-4">
+                {pagination.prev && (
+                    <button className="btn btn-outline-primary mx-1" onClick={() => fetchApartments(pagination.prev.page)}>
+                        &laquo; Prev
+                    </button>
+                )}
+                {pagination.next && (
+                    <button className="btn btn-outline-primary mx-1" onClick={() => fetchApartments(pagination.next.page)}>
+                        Next &raquo;
+                    </button>
+                )}
+            </div>
+        </>
       )}
     </div>
   );

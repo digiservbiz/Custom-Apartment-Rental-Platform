@@ -6,6 +6,7 @@ const {
   updateApartment,
   deleteApartment,
   checkAvailability,
+  getMyApartments,
 } = require('../controllers/apartmentController');
 
 const router = express.Router();
@@ -21,6 +22,8 @@ router
   .route('/')
   .get(getApartments)
   .post(protect, authorize('owner', 'agent', 'admin'), createApartment);
+
+router.route('/myapartments').get(protect, authorize('owner', 'agent', 'admin'), getMyApartments);
 
 router
   .route('/:id')

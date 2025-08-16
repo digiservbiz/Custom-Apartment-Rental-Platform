@@ -4,9 +4,11 @@ const { sendEmail } = require('../services/emailService');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 
-// @desc    Create new review
-// @route   POST /api/v1/reviews
-// @access  Private (Renters who have booked the apartment)
+/**
+ * @desc    Create new review
+ * @route   POST /api/v1/reviews
+ * @access  Private (Renters who have booked the apartment)
+ */
 exports.createReview = asyncHandler(async (req, res, next) => {
     req.body.renter = req.user.id;
 
@@ -30,10 +32,12 @@ exports.createReview = asyncHandler(async (req, res, next) => {
     res.status(201).json({ success: true, data: review });
 });
 
-// @desc    Get all reviews
-// @route   GET /api/v1/reviews
-// @route   GET /api/v1/apartments/:apartmentId/reviews
-// @access  Public
+/**
+ * @desc    Get all reviews
+ * @route   GET /api/v1/reviews
+ * @route   GET /api/v1/apartments/:apartmentId/reviews
+ * @access  Public
+ */
 exports.getReviews = asyncHandler(async (req, res, next) => {
     let query;
 
@@ -52,9 +56,11 @@ exports.getReviews = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, count: reviews.length, data: reviews });
 });
 
-// @desc    Get single review
-// @route   GET /api/v1/reviews/:id
-// @access  Public
+/**
+ * @desc    Get single review
+ * @route   GET /api/v1/reviews/:id
+ * @access  Public
+ */
 exports.getReview = asyncHandler(async (req, res, next) => {
     const review = await Review.findById(req.params.id).populate('renter', 'name');
     if (!review) {
@@ -63,9 +69,11 @@ exports.getReview = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, data: review });
 });
 
-// @desc    Update review (for moderation)
-// @route   PUT /api/v1/reviews/:id
-// @access  Private (Admin)
+/**
+ * @desc    Update review (for moderation)
+ * @route   PUT /api/v1/reviews/:id
+ * @access  Private (Admin)
+ */
 exports.updateReview = asyncHandler(async (req, res, next) => {
     let review = await Review.findById(req.params.id).populate('renter');
 
@@ -91,9 +99,11 @@ exports.updateReview = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, data: review });
 });
 
-// @desc    Delete review
-// @route   DELETE /api/v1/reviews/:id
-// @access  Private (Admin)
+/**
+ * @desc    Delete review
+ * @route   DELETE /api/v1/reviews/:id
+ * @access  Private (Admin)
+ */
 exports.deleteReview = asyncHandler(async (req, res, next) => {
     const review = await Review.findById(req.params.id);
 

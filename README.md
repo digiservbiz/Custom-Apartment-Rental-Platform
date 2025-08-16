@@ -15,83 +15,101 @@ This project is a web-based apartment rental platform connecting apartment owner
 - Only one manager per apartment (owner or agent) at a time.
 - Apartment status: Available, Rented, Pending Confirmation.
 
-### WhatsApp Availability Check
+### WhatsApp Availability Check (Simulated)
 - The system sends individual WhatsApp messages to owners/agents per apartment to ask for availability when renters search.
 - Owners/agents reply with "Yes [ApartmentID]" or "No [ApartmentID]".
 - The system parses replies to update apartment availability.
 - If no reply is received within a specified time window, the status is set to "Pending Confirmation".
 
-### Booking & Payment
+### Booking & Payment (Simulated)
 - Renters can book apartments directly online.
 - Support for multiple payment methods, including offline options.
 - Payments trigger a commission fee deduction (editable by the admin).
 - Booking status updates based on payment completion.
 - Apartments are marked as unavailable once booked.
 
-### Notifications
+### Notifications (Simulated)
 - Send booking confirmations and updates via email and WhatsApp to renters and owners/agents.
 
 ### Reviews
 - Renters can submit reviews after their stays.
-- Reviews require admin moderation before being displayed publicly.
+- Reviews require admin moderation before public display.
 
 ### Admin Panel
 - Manage users, apartments, bookings, KYC approvals, commissions, and reviews.
 - View reports and manage the commission fee percentage.
 
-## Technical Requirements
+## Technical Stack
 
-- **Backend:** RESTful API using Node.js/Express.
-- **Database:** PostgreSQL or MySQL.
-- **Frontend:** React for a responsive UI.
-- **Authentication:** JWT with role-based access control.
-- **WhatsApp Integration:** Use WhatsApp Business API or Twilio API to send/receive availability queries.
-- **Payments:** Integrate Stripe or PayPal with commission handling.
-- **Notifications:** Email (SendGrid/Mailgun) and WhatsApp.
-- **Security:** Secure KYC document upload and storage, and data protection best practices.
+- **Backend:** Node.js, Express, Mongoose
+- **Frontend:** React, React Router, Bootstrap
+- **Database:** MongoDB (or any other NoSQL/SQL database)
+- **Authentication:** JWT
 
 ## Getting Started
 
 ### Prerequisites
 - Node.js
 - npm or yarn
-- PostgreSQL or MySQL
+- MongoDB
 
 ### Installation
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/custom-apartment-rental-platform.git
-   ```
-2. Navigate to the project directory:
-   ```bash
-   cd custom-apartment-rental-platform
-   ```
-3. Install backend dependencies:
-   ```bash
-   npm install
-   ```
-4. Navigate to the client directory and install frontend dependencies:
-   ```bash
-   cd client
-   npm install
-   ```
-5. Set up your environment variables by creating a `.env` file in the root directory.
+1. Clone the repository.
+2. Install backend dependencies: `npm install`
+3. Navigate to the client directory and install frontend dependencies: `cd client && npm install`
+4. Create a `.env` file in the root directory and add the following environment variables:
+   - `MONGO_URI`: Your MongoDB connection string
+   - `JWT_SECRET`: A secret for signing JWTs
+   - `JWT_EXPIRE`: JWT expiration time (e.g., `30d`)
+   - `JWT_COOKIE_EXPIRE`: JWT cookie expiration time (in days)
 
 ### Running the Application
-- To start the backend server: `npm start`
+- To start the backend server: `npm run dev` (or `npm start`)
 - To start the frontend development server: `cd client && npm start`
 
 ## API Endpoints
 
-(To be documented as the API is developed)
+### Auth
+- `POST /api/v1/auth/register`: Register a new user.
+- `POST /api/v1/auth/login`: Login a user.
+- `GET /api/v1/auth/me`: Get the logged in user.
 
-## Deployment
+### Apartments
+- `GET /api/v1/apartments`: Get all apartments.
+- `GET /api/v1/apartments/:id`: Get a single apartment.
+- `POST /api/v1/apartments`: Create a new apartment.
+- `PUT /api/v1/apartments/:id`: Update an apartment.
+- `DELETE /api/v1/apartments/:id`: Delete an apartment.
+- `POST /api/v1/apartments/:id/check-availability`: Check apartment availability.
+- `GET /api/v1/apartments/myapartments`: Get apartments for the logged in user.
 
-(Instructions to be added)
+### Bookings
+- `GET /api/v1/bookings`: Get all bookings (admin).
+- `POST /api/v1/bookings`: Create a new booking.
+- `GET /api/v1/bookings/mybookings`: Get bookings for the logged in user.
+- `GET /api/v1/bookings/:id`: Get a single booking.
+
+### Reviews
+- `GET /api/v1/reviews`: Get all reviews.
+- `GET /api/v1/apartments/:apartmentId/reviews`: Get all reviews for an apartment.
+- `POST /api/v1/reviews`: Create a new review.
+- `GET /api/v1/reviews/:id`: Get a single review.
+- `PUT /api/v1/reviews/:id`: Update a review.
+- `DELETE /api/v1/reviews/:id`: Delete a review.
+
+### Users (Admin)
+- `GET /api/v1/users`: Get all users.
+- `GET /api/v1/users/:id`: Get a single user.
+- `PUT /api/v1/users/:id`: Update a user.
+- `DELETE /api/v1/users/:id`: Delete a user.
+- `PUT /api/v1/users/:id/updatestatus`: Update a user's KYC status.
+
+### WhatsApp (Simulated)
+- `POST /api/v1/whatsapp/webhook`: Webhook for incoming WhatsApp messages.
 
 ## Contributing
 
-(Guidelines for contributing to the project)
+Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 ## License
 
