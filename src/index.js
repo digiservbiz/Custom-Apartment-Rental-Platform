@@ -32,6 +32,9 @@ app.use('/api/v1/bookings', bookings);
 app.use('/api/v1/reviews', reviews);
 app.use('/api/v1/users', users);
 
+const errorHandler = require('./middleware/error');
+app.use(errorHandler);
+
 // Define a simple route
 app.get('/', (req, res) => {
   res.send('API is running...');

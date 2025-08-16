@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import AuthContext from '../context/AuthContext';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
+  const { login } = useContext(AuthContext);
 
   const { email, password } = formData;
 
@@ -13,33 +15,36 @@ const LoginForm = () => {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission
-    console.log(formData);
+    login(email, password);
   };
 
   return (
     <form onSubmit={onSubmit}>
-      <div>
+      <div className="form-group">
         <label>Email Address</label>
         <input
           type="email"
           name="email"
           value={email}
           onChange={onChange}
+          className="form-control"
           required
         />
       </div>
-      <div>
+      <div className="form-group">
         <label>Password</label>
         <input
           type="password"
           name="password"
           value={password}
           onChange={onChange}
+          className="form-control"
           required
         />
       </div>
-      <button type="submit">Login</button>
+      <button type="submit" className="btn btn-primary mt-3">
+        Login
+      </button>
     </form>
   );
 };

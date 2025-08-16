@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import AuthContext from '../../context/AuthContext';
+import Spinner from '../../components/Spinner';
+import Alert from '../../components/Alert';
 
 const ApartmentListPage = () => {
   const [apartments, setApartments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const { user: adminUser } = useContext(AuthContext);
 
   useEffect(() => {
@@ -17,8 +21,10 @@ const ApartmentListPage = () => {
         };
         const { data } = await axios.get('/api/v1/apartments', config);
         setApartments(data.data);
-      } catch (error) {
-        console.error('Error fetching apartments', error);
+        setLoading(false);
+      } catch (err) {
+        setError('Error fetching apartments');
+        setLoading(false);
       }
     };
 
@@ -27,10 +33,18 @@ const ApartmentListPage = () => {
     }
   }, [adminUser]);
 
+  if (loading) {
+    return <Spinner />;
+  }
+
+  if (error) {
+    return <Alert type="danger" message={error} />;
+  }
+
   return (
     <div>
       <h1>Manage Apartments</h1>
-      <table>
+      <table className="table table-striped">
         <thead>
           <tr>
             <th>ID</th>
@@ -48,8 +62,8 @@ const ApartmentListPage = () => {
               <td>${apartment.pricePerNight}</td>
               <td>{apartment.status}</td>
               <td>
-                <button>Edit</button>
-                <button>Delete</button>
+                <button className="btn btn-primary btn-sm">Edit</button>
+                <button className="btn btn-danger btn-sm ms-2">Delete</button>
               </td>
             </tr>
           ))}

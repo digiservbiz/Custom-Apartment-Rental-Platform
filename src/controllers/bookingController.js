@@ -3,18 +3,19 @@ const Apartment = require('../models/Apartment');
 const { processPayment } = require('../services/paymentService');
 const { sendEmail } = require('../services/emailService');
 const { sendMessage } = require('../services/whatsappService');
+const ErrorResponse = require('../utils/errorResponse');
+const asyncHandler = require('../middleware/async');
 
 // @desc    Create new booking
 // @route   POST /api/v1/bookings
 // @access  Private (Renters)
-exports.createBooking = async (req, res, next) => {
-  try {
+exports.createBooking = asyncHandler(async (req, res, next) => {
     req.body.renter = req.user.id;
 
     const apartment = await Apartment.findById(req.body.apartment).populate('manager');
 
     if (!apartment) {
-      return res.status(404).json({ success: false, message: 'Apartment not found' });
+        return next(new ErrorResponse(`Apartment not found with id of ${req.body.apartment}`, 404));
     }
 
     // Create booking with pending status
@@ -52,52 +53,37 @@ exports.createBooking = async (req, res, next) => {
     }
 
     res.status(201).json({ success: true, data: booking });
-  } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
-  }
-};
+});
 
 // @desc    Get all bookings
 // @route   GET /api/v1/bookings
 // @access  Private (Admin)
-exports.getBookings = async (req, res, next) => {
-    try {
-        const bookings = await Booking.find().populate('apartment', 'location').populate('renter', 'name email');
-        res.status(200).json({ success: true, count: bookings.length, data: bookings });
-    } catch (error) {
-        res.status(400).json({ success: false, message: error.message });
-    }
-};
+exports.getBookings = asyncHandler(async (req, res, next) => {
+    const bookings = await Booking.find().populate('apartment', 'location').populate('renter', 'name email');
+    res.status(200).json({ success: true, count: bookings.length, data: bookings });
+});
 
 // @desc    Get my bookings
 // @route   GET /api/v1/bookings/mybookings
 // @access  Private
-exports.getMyBookings = async (req, res, next) => {
-    try {
-        const bookings = await Booking.find({ renter: req.user.id }).populate('apartment', 'location');
-        res.status(200).json({ success: true, count: bookings.length, data: bookings });
-    } catch (error) {
-        res.status(400).json({ success: false, message: error.message });
-    }
-};
+exports.getMyBookings = asyncHandler(async (req, res, next) => {
+    const bookings = await Booking.find({ renter: req.user.id }).populate('apartment', 'location');
+    res.status(200).json({ success: true, count: bookings.length, data: bookings });
+});
 
 // @desc    Get single booking
 // @route   GET /api/v1/bookings/:id
 // @access  Private
-exports.getBooking = async (req, res, next) => {
-    try {
-        const booking = await Booking.findById(req.params.id).populate('apartment', 'location').populate('renter', 'name email');
-        if (!booking) {
-            return res.status(404).json({ success: false, message: 'Booking not found' });
-        }
-
-        // Make sure user is the renter or an admin
-        if (booking.renter.toString() !== req.user.id && req.user.role !== 'admin') {
-            return res.status(401).json({ success: false, message: 'Not authorized to view this booking' });
-        }
-
-        res.status(200).json({ success: true, data: booking });
-    } catch (error) {
-        res.status(400).json({ success: false, message: error.message });
+exports.getBooking = asyncHandler(async (req, res, next) => {
+    const booking = await Booking.findById(req.params.id).populate('apartment', 'location').populate('renter', 'name email');
+    if (!booking) {
+        return next(new ErrorResponse(`Booking not found with id of ${req.params.id}`, 404));
     }
-};
+
+    // Make sure user is the renter or an admin
+    if (booking.renter.toString() !== req.user.id && req.user.role !== 'admin') {
+        return next(new ErrorResponse(`User ${req.user.id} is not authorized to view this booking`, 401));
+    }
+
+    res.status(200).json({ success: true, data: booking });
+});

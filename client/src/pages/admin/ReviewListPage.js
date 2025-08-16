@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import AuthContext from '../../context/AuthContext';
+import Spinner from '../../components/Spinner';
+import Alert from '../../components/Alert';
 
 const ReviewListPage = () => {
   const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const { user: adminUser } = useContext(AuthContext);
 
   const fetchReviews = async () => {
@@ -16,8 +20,10 @@ const ReviewListPage = () => {
       };
       const { data } = await axios.get('/api/v1/reviews', config);
       setReviews(data.data);
-    } catch (error) {
-      console.error('Error fetching reviews', error);
+      setLoading(false);
+    } catch (err) {
+      setError('Error fetching reviews');
+      setLoading(false);
     }
   };
 
@@ -42,10 +48,18 @@ const ReviewListPage = () => {
     }
   };
 
+  if (loading) {
+    return <Spinner />;
+  }
+
+  if (error) {
+    return <Alert type="danger" message={error} />;
+  }
+
   return (
     <div>
       <h1>Manage Reviews</h1>
-      <table>
+      <table className="table table-striped">
         <thead>
           <tr>
             <th>Apartment</th>
@@ -67,8 +81,8 @@ const ReviewListPage = () => {
               <td>
                 {review.status === 'Pending' && (
                   <>
-                    <button onClick={() => handleUpdateStatus(review._id, 'Approved')}>Approve</button>
-                    <button onClick={() => handleUpdateStatus(review._id, 'Rejected')}>Reject</button>
+                    <button onClick={() => handleUpdateStatus(review._id, 'Approved')} className="btn btn-success btn-sm">Approve</button>
+                    <button onClick={() => handleUpdateStatus(review._id, 'Rejected')} className="btn btn-danger btn-sm ms-2">Reject</button>
                   </>
                 )}
               </td>

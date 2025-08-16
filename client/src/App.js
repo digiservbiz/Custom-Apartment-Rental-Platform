@@ -15,15 +15,18 @@ import UserListPage from './pages/admin/UserListPage';
 import AdminApartmentListPage from './pages/admin/ApartmentListPage';
 import AdminReviewListPage from './pages/admin/ReviewListPage';
 import AdminKYCListPage from './pages/admin/KYCListPage';
+import Header from './components/Header';
 import './App.css';
 
 function App() {
   return (
     <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
+      <Header />
+      <main className="py-3">
+        <div className="container">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/apartments" element={<ApartmentListPage />} />
           <Route path="/apartments/:id" element={<ApartmentDetailsPage />} />

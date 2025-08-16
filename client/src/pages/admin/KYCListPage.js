@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import AuthContext from '../../context/AuthContext';
+import Spinner from '../../components/Spinner';
+import Alert from '../../components/Alert';
 
 const KYCListPage = () => {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const { user: adminUser } = useContext(AuthContext);
 
   const fetchUsers = async () => {
@@ -16,8 +20,10 @@ const KYCListPage = () => {
       };
       const { data } = await axios.get('/api/v1/users', config);
       setUsers(data.data.filter(user => user.kycStatus === 'pending'));
-    } catch (error) {
-      console.error('Error fetching users', error);
+      setLoading(false);
+    } catch (err) {
+      setError('Error fetching users');
+      setLoading(false);
     }
   };
 
@@ -42,10 +48,18 @@ const KYCListPage = () => {
     }
   };
 
+  if (loading) {
+    return <Spinner />;
+  }
+
+  if (error) {
+    return <Alert type="danger" message={error} />;
+  }
+
   return (
     <div>
       <h1>Manage KYC Requests</h1>
-      <table>
+      <table className="table table-striped">
         <thead>
           <tr>
             <th>ID</th>
@@ -65,8 +79,8 @@ const KYCListPage = () => {
               <td>{user.role}</td>
               <td>{user.kycStatus}</td>
               <td>
-                <button onClick={() => handleUpdateStatus(user._id, 'approved')}>Approve</button>
-                <button onClick={() => handleUpdateStatus(user._id, 'rejected')}>Reject</button>
+                <button onClick={() => handleUpdateStatus(user._id, 'approved')} className="btn btn-success btn-sm">Approve</button>
+                <button onClick={() => handleUpdateStatus(user._id, 'rejected')} className="btn btn-danger btn-sm ms-2">Reject</button>
               </td>
             </tr>
           ))}

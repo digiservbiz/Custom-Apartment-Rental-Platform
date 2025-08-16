@@ -41,8 +41,17 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const register = async (name, email, password, role) => {
+    const { data } = await axios.post('/api/v1/auth/register', { name, email, password, role });
+    localStorage.setItem('token', data.token);
+    const { data: userData } = await axios.get('/api/v1/auth/me', {
+        headers: { Authorization: `Bearer ${data.token}` },
+    });
+    setUser(userData.data);
+    };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register }}>
       {children}
     </AuthContext.Provider>
   );
