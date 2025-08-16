@@ -1,6 +1,8 @@
 const Booking = require('../models/Booking');
 const Apartment = require('../models/Apartment');
 const { processPayment } = require('../services/paymentService');
+const { sendEmail } = require('../services/emailService');
+const { sendMessage } = require('../services/whatsappService');
 
 // @desc    Create new booking
 // @route   POST /api/v1/bookings
@@ -9,7 +11,7 @@ exports.createBooking = async (req, res, next) => {
   try {
     req.body.renter = req.user.id;
 
-    const apartment = await Apartment.findById(req.body.apartment);
+    const apartment = await Apartment.findById(req.body.apartment).populate('manager');
 
     if (!apartment) {
       return res.status(404).json({ success: false, message: 'Apartment not found' });
@@ -27,6 +29,23 @@ exports.createBooking = async (req, res, next) => {
       // Mark apartment as rented
       apartment.status = 'Rented';
       await apartment.save();
+
+      // Send notifications
+      const renter = req.user;
+      const owner = apartment.manager;
+
+      const renterMessage = `Your booking for ${apartment.location} is confirmed.`;
+      await sendEmail(renter.email, 'Booking Confirmation', renterMessage);
+      if (renter.phoneNumber) {
+        await sendMessage(renter.phoneNumber, renterMessage);
+      }
+
+      const ownerMessage = `Your apartment ${apartment.location} has been booked.`;
+      await sendEmail(owner.email, 'New Booking', ownerMessage);
+      if (owner.phoneNumber) {
+        await sendMessage(owner.phoneNumber, ownerMessage);
+      }
+
     } else {
         // Payment failed, booking remains pending or could be cancelled
         // For simplicity, we leave it as pending for now

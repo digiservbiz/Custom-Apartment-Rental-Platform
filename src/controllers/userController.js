@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const { sendEmail } = require('../services/emailService');
 
 // @desc    Get all users
 // @route   GET /api/v1/users
@@ -36,6 +37,11 @@ exports.updateUserStatus = async (req, res, next) => {
             new: true,
             runValidators: true,
         });
+
+        // Send notification to user
+        const message = `Your KYC status has been updated to ${user.kycStatus}.`;
+        await sendEmail(user.email, 'KYC Status Update', message);
+
         res.status(200).json({ success: true, data: user });
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });

@@ -1,5 +1,6 @@
 const Review = require('../models/Review');
 const Booking = require('../models/Booking');
+const { sendEmail } = require('../services/emailService');
 
 // @desc    Create new review
 // @route   POST /api/v1/reviews
@@ -20,6 +21,10 @@ exports.createReview = async (req, res, next) => {
     }
 
     const review = await Review.create(req.body);
+
+    // Send notification to admin
+    // In a real app, you would have a way to get the admin's email
+    await sendEmail('admin@example.com', 'New Review Submitted', `A new review has been submitted for apartment ${req.body.apartment}.`);
 
     res.status(201).json({ success: true, data: review });
   } catch (error) {
@@ -73,7 +78,7 @@ exports.getReview = async (req, res, next) => {
 // @access  Private (Admin)
 exports.updateReview = async (req, res, next) => {
     try {
-        let review = await Review.findById(req.params.id);
+        let review = await Review.findById(req.params.id).populate('renter');
 
         if (!review) {
             return res.status(404).json({ success: false, message: 'Review not found' });
@@ -88,6 +93,11 @@ exports.updateReview = async (req, res, next) => {
             new: true,
             runValidators: true,
         });
+
+        // Send notification to renter
+        const renter = review.renter;
+        const message = `Your review for apartment ${review.apartment} has been ${review.status}.`;
+        await sendEmail(renter.email, 'Review Status Update', message);
 
         res.status(200).json({ success: true, data: review });
     } catch (error) {
