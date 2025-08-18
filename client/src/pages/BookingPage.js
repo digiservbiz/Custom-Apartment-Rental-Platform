@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import Spinner from '../components/Spinner';
 import Alert from '../components/Alert';
+import { useTranslation } from 'react-i18next';
 
 const BookingPage = () => {
   const { id } = useParams();
@@ -13,6 +14,7 @@ const BookingPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchApartment = async () => {
@@ -65,10 +67,10 @@ const BookingPage = () => {
       };
       const body = JSON.stringify(newBooking);
       await axios.post('/api/v1/bookings', body, config);
-      setSuccess('Booking successful!');
+      setSuccess(t('booking_successful'));
       setError('');
     } catch (err) {
-      setError('Booking failed');
+      setError(t('booking_failed'));
       setSuccess('');
     }
   };
@@ -79,12 +81,12 @@ const BookingPage = () => {
 
   return (
     <div>
-      {apartment && <h1>Book {apartment.location}</h1>}
+      {apartment && <h1>{t('book_apartment')} {apartment.location}</h1>}
       {error && <Alert type="danger" message={error} />}
       {success && <Alert type="success" message={success} />}
       <form onSubmit={onSubmit}>
         <div className="form-group">
-          <label>Check-in Date</label>
+          <label>{t('check_in_date')}</label>
           <input
             type="date"
             value={checkInDate}
@@ -94,7 +96,7 @@ const BookingPage = () => {
           />
         </div>
         <div className="form-group">
-          <label>Check-out Date</label>
+          <label>{t('check_out_date')}</label>
           <input
             type="date"
             value={checkOutDate}
@@ -103,8 +105,8 @@ const BookingPage = () => {
             required
           />
         </div>
-        {totalPrice > 0 && <h2>Total Price: ${totalPrice}</h2>}
-        <button type="submit" className="btn btn-primary mt-3">Confirm & Pay</button>
+        {totalPrice > 0 && <h2>{t('total_price')}: ${totalPrice}</h2>}
+        <button type="submit" className="btn btn-primary mt-3">{t('confirm_and_pay')}</button>
       </form>
     </div>
   );
