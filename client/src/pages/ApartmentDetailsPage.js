@@ -4,6 +4,7 @@ import axios from 'axios';
 import Spinner from '../components/Spinner';
 import Alert from '../components/Alert';
 import MockMap from '../components/MockMap';
+import { useTranslation } from 'react-i18next';
 
 const ApartmentDetailsPage = () => {
   const { id } = useParams();
@@ -11,6 +12,7 @@ const ApartmentDetailsPage = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchApartmentDetails = async () => {
@@ -58,28 +60,28 @@ const ApartmentDetailsPage = () => {
           <span className="visually-hidden">Next</span>
         </button>
       </div>
-
+      
       <div className="row mt-4">
         <div className="col-md-8">
-            <p>Price per night: ${apartment.pricePerNight}</p>
-            <p>Max guests: {apartment.maxGuests}</p>
+            <p>{t('price_per_night')}: ${apartment.pricePerNight}</p>
+            <p>{t('max_guests')}: {apartment.maxGuests}</p>
             <p>{apartment.description}</p>
         </div>
         <div className="col-md-4">
             <MockMap />
         </div>
       </div>
-
+      
       <div className="mt-4">
-        <h2>Reviews</h2>
+        <h2>{t('reviews')}</h2>
         {reviews.length === 0 ? (
-            <p>No reviews yet.</p>
+            <p>{t('no_reviews_yet')}</p>
         ) : (
             reviews.map((review) => (
             <div key={review._id} className="card mb-3">
                 <div className="card-body">
                     <h5 className="card-title">{review.renter.name}</h5>
-                    <p className="card-text">Rating: {review.rating}</p>
+                    <p className="card-text">{t('rating')}: {review.rating}</p>
                     <p className="card-text">{review.comment}</p>
                 </div>
             </div>
