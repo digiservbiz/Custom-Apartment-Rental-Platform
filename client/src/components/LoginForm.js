@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 import Alert from './Alert';
+import { useTranslation } from 'react-i18next';
 
 const LoginForm = () => {
   const [formData, setFormData] = useState({
@@ -9,6 +10,7 @@ const LoginForm = () => {
   });
   const [error, setError] = useState('');
   const { login } = useContext(AuthContext);
+  const { t } = useTranslation();
 
   const { email, password } = formData;
 
@@ -28,7 +30,7 @@ const LoginForm = () => {
     <form onSubmit={onSubmit}>
       {error && <Alert type="danger" message={error} />}
       <div className="form-group">
-        <label>Email Address</label>
+        <label>{t('email_address')}</label>
         <input
           type="email"
           name="email"
@@ -39,7 +41,7 @@ const LoginForm = () => {
         />
       </div>
       <div className="form-group">
-        <label>Password</label>
+        <label>{t('password')}</label>
         <input
           type="password"
           name="password"
@@ -50,7 +52,7 @@ const LoginForm = () => {
         />
       </div>
       <button type="submit" className="btn btn-primary mt-3">
-        Login
+        {t('login')}
       </button>
     </form>
   );
