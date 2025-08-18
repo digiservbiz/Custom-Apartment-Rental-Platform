@@ -3,6 +3,7 @@ import axios from 'axios';
 import ApartmentCard from '../components/ApartmentCard';
 import Spinner from '../components/Spinner';
 import Alert from '../components/Alert';
+import { useTranslation } from 'react-i18next';
 
 const ApartmentListPage = () => {
   const [apartments, setApartments] = useState([]);
@@ -13,6 +14,7 @@ const ApartmentListPage = () => {
   const [guests, setGuests] = useState('');
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({});
+  const { t } = useTranslation();
 
   const fetchApartments = async (pageNumber = 1) => {
     try {
@@ -21,7 +23,7 @@ const ApartmentListPage = () => {
       if (price.min) url += `&pricePerNight[gte]=${price.min}`;
       if (price.max) url += `&pricePerNight[lte]=${price.max}`;
       if (guests) url += `&maxGuests[gte]=${guests}`;
-
+      
       const { data } = await axios.get(url);
       setApartments(data.data);
       setPagination(data.pagination);
@@ -44,7 +46,7 @@ const ApartmentListPage = () => {
 
   return (
     <div>
-      <h1>Apartments</h1>
+      <h1>{t('apartments')}</h1>
       <form onSubmit={submitHandler} className="mb-4">
         <div className="row">
           <div className="col-md-6">
@@ -52,7 +54,7 @@ const ApartmentListPage = () => {
               <input
                 type="text"
                 className="form-control"
-                placeholder="Search by location..."
+                placeholder={t('search_by_location')}
                 value={keyword}
                 onChange={(e) => setKeyword(e.target.value)}
               />
@@ -62,7 +64,7 @@ const ApartmentListPage = () => {
             <input
               type="number"
               className="form-control"
-              placeholder="Min Price"
+              placeholder={t('min_price')}
               value={price.min}
               onChange={(e) => setPrice({ ...price, min: e.target.value })}
             />
@@ -71,7 +73,7 @@ const ApartmentListPage = () => {
             <input
               type="number"
               className="form-control"
-              placeholder="Max Price"
+              placeholder={t('max_price')}
               value={price.max}
               onChange={(e) => setPrice({ ...price, max: e.target.value })}
             />
@@ -80,14 +82,14 @@ const ApartmentListPage = () => {
             <input
               type="number"
               className="form-control"
-              placeholder="Guests"
+              placeholder={t('guests')}
               value={guests}
               onChange={(e) => setGuests(e.target.value)}
             />
           </div>
         </div>
         <button className="btn btn-primary mt-2" type="submit">
-          Apply Filters
+          {t('apply_filters')}
         </button>
       </form>
 
