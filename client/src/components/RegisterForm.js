@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 import Alert from './Alert';
+import { useTranslation } from 'react-i18next';
 
 const RegisterForm = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const RegisterForm = () => {
   });
   const [error, setError] = useState('');
   const { register } = useContext(AuthContext);
+  const { t } = useTranslation();
 
   const { name, email, password, password2, role } = formData;
 
@@ -21,7 +23,7 @@ const RegisterForm = () => {
   const onSubmit = (e) => {
     e.preventDefault();
     if (password !== password2) {
-      setError('Passwords do not match');
+      setError(t('passwords_do_not_match'));
     } else {
       setError('');
       register(name, email, password, role);
@@ -32,7 +34,7 @@ const RegisterForm = () => {
     <form onSubmit={onSubmit}>
         {error && <Alert type="danger" message={error} />}
       <div className="form-group">
-        <label>Name</label>
+        <label>{t('name')}</label>
         <input
           type="text"
           name="name"
@@ -43,7 +45,7 @@ const RegisterForm = () => {
         />
       </div>
       <div className="form-group">
-        <label>Email Address</label>
+        <label>{t('email_address')}</label>
         <input
           type="email"
           name="email"
@@ -54,7 +56,7 @@ const RegisterForm = () => {
         />
       </div>
       <div className="form-group">
-        <label>Password</label>
+        <label>{t('password')}</label>
         <input
           type="password"
           name="password"
@@ -66,7 +68,7 @@ const RegisterForm = () => {
         />
       </div>
       <div className="form-group">
-        <label>Confirm Password</label>
+        <label>{t('confirm_password')}</label>
         <input
           type="password"
           name="password2"
@@ -78,15 +80,15 @@ const RegisterForm = () => {
         />
       </div>
       <div className="form-group">
-        <label>Role</label>
+        <label>{t('role')}</label>
         <select name="role" value={role} onChange={onChange} className="form-control">
-          <option value="renter">Renter</option>
-          <option value="owner">Owner</option>
-          <option value="agent">Agent</option>
+          <option value="renter">{t('renter')}</option>
+          <option value="owner">{t('owner')}</option>
+          <option value="agent">{t('agent')}</option>
         </select>
       </div>
       <button type="submit" className="btn btn-primary mt-3">
-        Register
+        {t('register')}
       </button>
     </form>
   );
