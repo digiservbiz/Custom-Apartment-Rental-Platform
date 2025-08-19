@@ -70,6 +70,11 @@ This project is a web-based apartment rental platform connecting apartment owner
    - `STRIPE_PUBLIC_KEY`: Your publishable key from your Stripe dashboard.
    - `STRIPE_SECRET_KEY`: Your secret key from your Stripe dashboard.
    - `STRIPE_WEBHOOK_SECRET`: Your webhook signing secret from your Stripe dashboard.
+   - `SENDGRID_API_KEY`: Your API key from SendGrid for sending emails.
+   - `SENDGRID_FROM_EMAIL`: Your verified sender email address in SendGrid.
+   - `TWILIO_ACCOUNT_SID`: Your Account SID from Twilio.
+   - `TWILIO_AUTH_TOKEN`: Your Auth Token from Twilio.
+   - `TWILIO_WHATSAPP_FROM_NUMBER`: Your Twilio WhatsApp-enabled number (e.g., `whatsapp:+14155238886`).
 
 ### Running the Application
 - To start the backend server: `npm run dev` (or `npm start`)

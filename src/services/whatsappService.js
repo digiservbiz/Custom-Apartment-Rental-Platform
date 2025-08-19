@@ -1,19 +1,62 @@
-// Mock WhatsApp Service
+const twilio = require('twilio');
 
-const sendMessage = async (to, message) => {
-  console.log(`Sending WhatsApp message to ${to}: "${message}"`);
-  // In a real application, this would interact with the WhatsApp API
-  return { success: true, messageId: `msg_${Date.now()}` };
-};
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const fromNumber = process.env.TWILIO_WHATSAPP_FROM_NUMBER;
 
-const receiveMessage = async (from, message) => {
-    console.log(`Received WhatsApp message from ${from}: "${message}"`);
-    // This function would be called by the webhook
-    // In this simulation, we will call it directly to test the logic
-    return { success: true };
+const client = twilio(accountSid, authToken);
+
+/**
+ * Sends a booking confirmation message via WhatsApp to the renter and the owner.
+ * @param {object} booking - The booking object, populated with renter and apartment.manager details.
+ */
+const sendBookingConfirmationMessage = async (booking) => {
+  if (!booking || !booking.renter || !booking.apartment || !booking.apartment.manager) {
+    console.error('Invalid booking object passed to sendBookingConfirmationMessage.');
+    return;
+  }
+
+  const { renter, apartment, checkInDate } = booking;
+  const owner = apartment.manager;
+  const formatDate = (date) => new Date(date).toLocaleDateString();
+
+  const messagesToSend = [];
+
+  // Prepare message for the Renter
+  if (renter.phoneNumber) {
+    messagesToSend.push({
+      body: `Hi ${renter.name}, your booking for ${apartment.location} starting on ${formatDate(checkInDate)} is confirmed.`,
+      from: fromNumber,
+      to: `whatsapp:${renter.phoneNumber}`,
+    });
+  } else {
+    console.log(`Renter ${renter.name} does not have a phone number. Skipping WhatsApp notification.`);
+  }
+
+  // Prepare message for the Owner/Manager
+  if (owner.phoneNumber) {
+    messagesToSend.push({
+      body: `New booking for ${apartment.location} from renter ${renter.name}, starting ${formatDate(checkInDate)}.`,
+      from: fromNumber,
+      to: `whatsapp:${owner.phoneNumber}`,
+    });
+  } else {
+    console.log(`Owner ${owner.name} does not have a phone number. Skipping WhatsApp notification.`);
+  }
+
+  if (messagesToSend.length === 0) {
+    console.log('No phone numbers provided for WhatsApp notifications.');
+    return;
+  }
+
+  try {
+    await Promise.all(messagesToSend.map(message => client.messages.create(message)));
+    console.log('Booking confirmation WhatsApp messages sent successfully.');
+  } catch (error) {
+    console.error('Error sending booking confirmation WhatsApp messages:', error);
+  }
 };
 
 module.exports = {
-  sendMessage,
-  receiveMessage,
+  sendBookingConfirmationMessage,
 };

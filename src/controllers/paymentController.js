@@ -2,6 +2,8 @@ const Stripe = require('stripe');
 const asyncHandler = require('../middleware/async');
 const ErrorResponse = require('../utils/errorResponse');
 const Booking = require('../models/Booking');
+const { sendBookingConfirmation } = require('../services/emailService');
+const { sendBookingConfirmationMessage } = require('../services/whatsappService');
 
 // @desc    Create a Stripe payment intent
 // @route   POST /api/v1/payments/create-payment-intent
@@ -70,14 +72,27 @@ exports.stripeWebhook = asyncHandler(async (req, res, next) => {
 
     console.log(`PaymentIntent for booking ${bookingId} was successful!`);
 
-    // Find the booking and update its status
-    const booking = await Booking.findById(bookingId);
+    // Find the booking, populate owner and renter details, and update its status
+    const booking = await Booking.findById(bookingId)
+      .populate('renter', 'name email phoneNumber')
+      .populate({
+        path: 'apartment',
+        select: 'location manager',
+        populate: {
+          path: 'manager',
+          select: 'name email phoneNumber',
+        },
+      });
+
     if (booking) {
       booking.status = 'Confirmed';
       await booking.save();
 
-      // Here you might also want to update the apartment's availability,
-      // send a confirmation email, etc. For now, we just update the booking.
+      // Send notifications
+      console.log('Sending notifications...');
+      sendBookingConfirmation(booking); // Fire-and-forget email
+      sendBookingConfirmationMessage(booking); // Fire-and-forget WhatsApp
+
     } else {
         console.error(`Webhook received for non-existent booking ID: ${bookingId}`);
     }
