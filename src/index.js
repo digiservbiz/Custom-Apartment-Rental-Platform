@@ -10,7 +10,17 @@ dotenv.config();
 // Connect to database
 connectDB();
 
+const { stripeWebhook } = require('./controllers/paymentController');
+
 const app = express();
+
+// Stripe webhook
+// Note: This route must be defined before express.json() to ensure we get the raw request body.
+app.post(
+  '/api/v1/payments/stripe-webhook',
+  express.raw({ type: 'application/json' }),
+  stripeWebhook
+);
 
 // Body parser
 app.use(express.json());
@@ -31,6 +41,7 @@ const whatsapp = require('./routes/whatsapp');
 const bookings = require('./routes/bookings');
 const reviews = require('./routes/reviews');
 const users = require('./routes/users');
+const payments = require('./routes/payments');
 
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/apartments', apartments);
@@ -38,6 +49,7 @@ app.use('/api/v1/whatsapp', whatsapp);
 app.use('/api/v1/bookings', bookings);
 app.use('/api/v1/reviews', reviews);
 app.use('/api/v1/users', users);
+app.use('/api/v1/payments', payments);
 
 const errorHandler = require('./middleware/error');
 app.use(errorHandler);

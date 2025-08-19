@@ -67,6 +67,9 @@ This project is a web-based apartment rental platform connecting apartment owner
    - `GOOGLE_CLIENT_SECRET`: Your Google OAuth client secret.
    - `FACEBOOK_APP_ID`: Your Facebook App ID.
    - `FACEBOOK_APP_SECRET`: Your Facebook App Secret.
+   - `STRIPE_PUBLIC_KEY`: Your publishable key from your Stripe dashboard.
+   - `STRIPE_SECRET_KEY`: Your secret key from your Stripe dashboard.
+   - `STRIPE_WEBHOOK_SECRET`: Your webhook signing secret from your Stripe dashboard.
 
 ### Running the Application
 - To start the backend server: `npm run dev` (or `npm start`)
