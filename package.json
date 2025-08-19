@@ -4,7 +4,9 @@
   "description": "This project is a web-based apartment rental platform connecting apartment owners, agents, and renters in a coastal city. The system aims to streamline apartment listing, availability checks via WhatsApp, booking, payments with commission fees, manual KYC for owners and agents, and moderated renter reviews.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -31,5 +33,11 @@
     "passport-google-oauth20": "^2.0.0",
     "stripe": "^18.4.0",
     "twilio": "^5.8.0"
+  },
+  "devDependencies": {
+    "jest": "^30.0.5",
+    "mongodb-memory-server": "^10.2.0",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.1.4"
   }
 }
