@@ -72,9 +72,7 @@ exports.getMe = asyncHandler(async (req, res, next) => {
  */
 const sendTokenResponse = (user, statusCode, res) => {
   // Create token
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE,
-  });
+  const token = user.getSignedJwtToken();
 
   const options = {
     expires: new Date(
@@ -94,4 +92,26 @@ const sendTokenResponse = (user, statusCode, res) => {
       success: true,
       token,
     });
+};
+
+/**
+ * @desc      Google OAuth callback
+ * @route     GET /api/v1/auth/google/callback
+ * @access    Public
+ */
+exports.googleCallback = (req, res, next) => {
+  const token = req.user.getSignedJwtToken();
+  // Redirect to a frontend route that will handle the token
+  res.redirect(`${process.env.CLIENT_URL}/login-success?token=${token}`);
+};
+
+/**
+ * @desc      Facebook OAuth callback
+ * @route     GET /api/v1/auth/facebook/callback
+ * @access    Public
+ */
+exports.facebookCallback = (req, res, next) => {
+  const token = req.user.getSignedJwtToken();
+  // Redirect to a frontend route that will handle the token
+  res.redirect(`${process.env.CLIENT_URL}/login-success?token=${token}`);
 };

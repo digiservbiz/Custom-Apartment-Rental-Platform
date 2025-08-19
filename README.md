@@ -6,7 +6,7 @@ This project is a web-based apartment rental platform connecting apartment owner
 
 ### User Roles & Authentication
 - **Owners and Agents:** Must complete manual KYC verification before managing apartments.
-- **Renters:** Can register/login using email/password, Google, or Facebook.
+- **Renters:** Can register and log in using a traditional email/password combination or via social providers like Google and Facebook.
 - Role-based access control for Owners, Agents, Renters, and Admin.
 
 ### Apartment Listings
@@ -57,11 +57,16 @@ This project is a web-based apartment rental platform connecting apartment owner
 1. Clone the repository.
 2. Install backend dependencies: `npm install`
 3. Navigate to the client directory and install frontend dependencies: `cd client && npm install`
-4. Create a `.env` file in the root directory and add the following environment variables:
+4. Create a `.env` file in the root directory by copying the example: `cp .env.example .env`. Then, add your values for the following variables:
    - `MONGO_URI`: Your MongoDB connection string
    - `JWT_SECRET`: A secret for signing JWTs
    - `JWT_EXPIRE`: JWT expiration time (e.g., `30d`)
    - `JWT_COOKIE_EXPIRE`: JWT cookie expiration time (in days)
+   - `CLIENT_URL`: The base URL of your frontend application (e.g., `http://localhost:3000`), used for OAuth redirects.
+   - `GOOGLE_CLIENT_ID`: Your Google OAuth client ID.
+   - `GOOGLE_CLIENT_SECRET`: Your Google OAuth client secret.
+   - `FACEBOOK_APP_ID`: Your Facebook App ID.
+   - `FACEBOOK_APP_SECRET`: Your Facebook App Secret.
 
 ### Running the Application
 - To start the backend server: `npm run dev` (or `npm start`)

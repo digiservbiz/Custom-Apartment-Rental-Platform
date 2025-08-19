@@ -51,9 +51,21 @@ const LoginForm = () => {
           required
         />
       </div>
-      <button type="submit" className="btn btn-primary mt-3">
+      <button type="submit" className="btn btn-primary mt-3 w-100">
         {t('login')}
       </button>
+
+      <div className="my-3">
+        <hr />
+        <p className="text-center">OR</p>
+      </div>
+
+      <a className="btn btn-danger w-100 mb-2" href="http://localhost:5000/api/v1/auth/google" role="button">
+        <i className="fab fa-google me-2"></i> Continue with Google
+      </a>
+      <a className="btn btn-primary w-100" href="http://localhost:5000/api/v1/auth/facebook" role="button">
+        <i className="fab fa-facebook me-2"></i> Continue with Facebook
+      </a>
     </form>
   );
 };

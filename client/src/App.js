@@ -16,6 +16,7 @@ import AdminApartmentListPage from './pages/admin/ApartmentListPage';
 import AdminReviewListPage from './pages/admin/ReviewListPage';
 import AdminKYCListPage from './pages/admin/KYCListPage';
 import MyApartmentsPage from './pages/MyApartmentsPage';
+import LoginSuccessPage from './pages/LoginSuccessPage';
 import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
@@ -29,6 +30,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/login-success" element={<LoginSuccessPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/apartments" element={<ApartmentListPage />} />
           <Route path="/apartments/:id" element={<ApartmentDetailsPage />} />

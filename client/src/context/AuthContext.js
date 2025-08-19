@@ -50,8 +50,25 @@ export const AuthProvider = ({ children }) => {
     setUser(userData.data);
     };
 
+  const socialLoginCallback = async (token) => {
+    setLoading(true);
+    localStorage.setItem('token', token);
+    try {
+      const { data: userData } = await axios.get('/api/v1/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser(userData.data);
+    } catch (error) {
+      console.error('Error loading user after social login', error);
+      localStorage.removeItem('token');
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register, socialLoginCallback }}>
       {children}
     </AuthContext.Provider>
   );
