@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const passport = require('passport');
 const connectDB = require('./config/db');
 
 // Load env vars
@@ -16,6 +17,12 @@ app.use(express.json());
 
 // Enable CORS
 app.use(cors());
+
+// Passport Config
+require('./config/passport')(passport);
+
+// Passport Middleware
+app.use(passport.initialize());
 
 // Mount routers
 const auth = require('./routes/auth');

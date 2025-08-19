@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -21,9 +22,21 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Please add a password'],
+    required: [
+      function () {
+        // If signing up with a social provider, a password is not required.
+        return !this.googleId && !this.facebookId;
+      },
+      'Password is required for email registration.',
+    ],
     minlength: 6,
     select: false,
+  },
+  googleId: {
+    type: String,
+  },
+  facebookId: {
+    type: String,
   },
   role: {
     type: String,
@@ -54,6 +67,13 @@ UserSchema.pre('save', async function (next) {
 // Match user entered password to hashed password in database
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
+};
+
+// Sign JWT and return
+UserSchema.methods.getSignedJwtToken = function () {
+  return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE,
+  });
 };
 
 module.exports = mongoose.model('User', UserSchema);
