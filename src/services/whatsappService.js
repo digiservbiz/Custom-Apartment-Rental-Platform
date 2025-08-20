@@ -57,6 +57,20 @@ const sendBookingConfirmationMessage = async (booking) => {
   }
 };
 
+const sendAvailabilityCheck = async (phoneNumber, message) => {
+  try {
+    await client.messages.create({
+      body: message,
+      from: fromNumber,
+      to: `whatsapp:${phoneNumber}`,
+    });
+    console.log(`Availability check sent successfully to ${phoneNumber}.`);
+  } catch (error) {
+    console.error('Error sending availability check message:', error);
+  }
+};
+
 module.exports = {
   sendBookingConfirmationMessage,
+  sendAvailabilityCheck,
 };

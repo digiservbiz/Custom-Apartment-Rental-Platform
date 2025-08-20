@@ -1,41 +1,63 @@
+const twilio = require('twilio');
 const Apartment = require('../models/Apartment');
+const User = require('../models/User');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 
+const { MessagingResponse } = twilio.twiml;
+
 /**
- * @desc    Handle incoming WhatsApp messages
+ * @desc    Handle incoming WhatsApp messages from Twilio
  * @route   POST /api/v1/whatsapp/webhook
- * @access  Public (webhook from WhatsApp)
+ * @access  Public
  */
 exports.handleIncomingMessage = asyncHandler(async (req, res, next) => {
-    const { from, message } = req.body; // Assuming the webhook sends from and message
+  const twiml = new MessagingResponse();
+  const incomingMsg = req.body.Body || '';
+  const fromNumber = req.body.From.replace('whatsapp:', '');
 
-    // Parse the message
-    const parts = message.trim().split(' ');
-    if (parts.length !== 2) {
-      return next(new ErrorResponse('Invalid message format', 400));
-    }
+  // Regex to find "yes" or "no" followed by an ID. Case-insensitive.
+  const match = incomingMsg.match(/^(yes|no)\s+([a-f\d]{24})$/i);
 
-    const availability = parts[0].toLowerCase();
-    const apartmentId = parts[1];
+  if (!match) {
+    // If the message format is invalid, we can optionally reply.
+    // For now, we'll just log it and send an empty response.
+    console.log(`Invalid message format from ${fromNumber}: "${incomingMsg}"`);
+    res.writeHead(200, { 'Content-Type': 'text/xml' });
+    return res.end(twiml.toString());
+  }
 
-    if (availability !== 'yes' && availability !== 'no') {
-      return next(new ErrorResponse('Invalid availability status', 400));
-    }
+  const availability = match[1].toLowerCase();
+  const apartmentId = match[2];
 
-    const apartment = await Apartment.findById(apartmentId);
+  // Find the apartment
+  const apartment = await Apartment.findById(apartmentId).populate('manager');
 
-    if (!apartment) {
-      return next(new ErrorResponse('Apartment not found', 404));
-    }
+  if (!apartment) {
+    console.log(`Apartment with ID ${apartmentId} not found.`);
+    res.writeHead(200, { 'Content-Type': 'text/xml' });
+    return res.end(twiml.toString());
+  }
 
-    if (availability === 'yes') {
-      apartment.status = 'Available';
-    } else {
-      apartment.status = 'Rented'; // Or maybe 'Unavailable'
-    }
+  // Security Check: Ensure the message is from the apartment manager
+  if (!apartment.manager || apartment.manager.phoneNumber !== fromNumber) {
+    console.log(`Unauthorized attempt to update apartment ${apartmentId} from number ${fromNumber}.`);
+    res.writeHead(200, { 'Content-Type': 'text/xml' });
+    return res.end(twiml.toString());
+  }
 
+  // Update status only on 'yes'
+  if (availability === 'yes') {
+    apartment.status = 'Available';
     await apartment.save();
+    console.log(`Apartment ${apartmentId} status updated to Available.`);
+    twiml.message('Thank you! The apartment status has been updated to "Available".');
+  } else {
+    // On 'no', we don't change the status. We can just acknowledge the reply.
+    console.log(`Received 'No' for apartment ${apartmentId}. Status not changed.`);
+    twiml.message('Thank you for your response.');
+  }
 
-    res.status(200).json({ success: true, data: 'Apartment status updated' });
+  res.writeHead(200, { 'Content-Type': 'text/xml' });
+  res.end(twiml.toString());
 });
