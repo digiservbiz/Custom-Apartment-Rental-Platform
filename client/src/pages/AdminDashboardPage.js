@@ -21,6 +21,9 @@ const AdminDashboardPage = () => {
         <li>
           <Link to="/admin/kyc-management">Manage KYC Requests</Link>
         </li>
+        <li>
+          <Link to="/admin/review-moderation">Moderate Reviews</Link>
+        </li>
       </ul>
     </div>
   );
