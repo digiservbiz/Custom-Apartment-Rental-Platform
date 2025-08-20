@@ -156,9 +156,9 @@ exports.checkAvailability = asyncHandler(async (req, res, next) => {
 
     const message = `A renter is interested in your apartment ${apartment.location} (ID: ${apartment._id}). Is it available? Please reply with 'Yes ${apartment._id}' or 'No ${apartment._id}'.`;
 
-    // In a real app, you would use a proper WhatsApp service
-    const { sendMessage } = require('../services/whatsappService');
-    await sendMessage(apartment.manager.phoneNumber, message);
+    // Use the WhatsApp service to send the check
+    const { sendAvailabilityCheck } = require('../services/whatsappService');
+    await sendAvailabilityCheck(apartment.manager.phoneNumber, message);
 
     apartment.status = 'Pending Confirmation';
     await apartment.save();

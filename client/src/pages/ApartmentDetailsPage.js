@@ -1,18 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from 'react';
+import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import Spinner from '../components/Spinner';
 import Alert from '../components/Alert';
 import MockMap from '../components/MockMap';
 import { useTranslation } from 'react-i18next';
+import AuthContext from '../context/AuthContext';
 
 const ApartmentDetailsPage = () => {
   const { id } = useParams();
+  const { user } = useContext(AuthContext);
   const [apartment, setApartment] = useState(null);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [availabilityMessage, setAvailabilityMessage] = useState('');
   const { t } = useTranslation();
+
+  const handleCheckAvailability = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      const { data } = await axios.post(`/api/v1/apartments/${id}/check-availability`, {}, config);
+      setAvailabilityMessage(data.data);
+    } catch (err) {
+      setError(err.response?.data?.error || 'Server Error');
+    }
+  };
 
   useEffect(() => {
     const fetchApartmentDetails = async () => {
@@ -65,7 +83,19 @@ const ApartmentDetailsPage = () => {
         <div className="col-md-8">
             <p>{t('price_per_night')}: ${apartment.pricePerNight}</p>
             <p>{t('max_guests')}: {apartment.maxGuests}</p>
+            <p><strong>{t('status')}:</strong> {apartment.status}</p>
             <p>{apartment.description}</p>
+            {user && user.role === 'renter' && (
+              <>
+                <button className="btn btn-info me-2" onClick={handleCheckAvailability}>
+                  {t('check_availability')}
+                </button>
+                <Link to={`/booking/${apartment._id}`} className="btn btn-primary">
+                    {t('book_now')}
+                </Link>
+              </>
+            )}
+            {availabilityMessage && <Alert type="success" message={availabilityMessage} />}
         </div>
         <div className="col-md-4">
             <MockMap />
