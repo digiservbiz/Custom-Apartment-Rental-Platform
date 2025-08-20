@@ -44,6 +44,7 @@ const bookings = require('./routes/bookings');
 const reviews = require('./routes/reviews');
 const users = require('./routes/users');
 const payments = require('./routes/payments');
+const settings = require('./routes/settings');
 
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/apartments', apartments);
@@ -52,6 +53,7 @@ app.use('/api/v1/bookings', bookings);
 app.use('/api/v1/reviews', reviews);
 app.use('/api/v1/users', users);
 app.use('/api/v1/payments', payments);
+app.use('/api/v1/settings', settings);
 
 const errorHandler = require('./middleware/error');
 app.use(errorHandler);

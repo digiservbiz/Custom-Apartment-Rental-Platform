@@ -17,6 +17,7 @@ import AdminReviewListPage from './pages/admin/ReviewListPage';
 import AdminKYCListPage from './pages/admin/KYCListPage';
 import KYCManagementPage from './pages/admin/KYCManagementPage';
 import ReviewModerationPage from './pages/admin/ReviewModerationPage';
+import CommissionPage from './pages/admin/CommissionPage';
 import MyApartmentsPage from './pages/MyApartmentsPage';
 import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -99,6 +100,14 @@ function App() {
             element={
               <AdminRoute>
                 <ReviewModerationPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/commission"
+            element={
+              <AdminRoute>
+                <CommissionPage />
               </AdminRoute>
             }
           />

@@ -24,6 +24,9 @@ const AdminDashboardPage = () => {
         <li>
           <Link to="/admin/review-moderation">Moderate Reviews</Link>
         </li>
+        <li>
+          <Link to="/admin/commission">Manage Commission</Link>
+        </li>
       </ul>
     </div>
   );
