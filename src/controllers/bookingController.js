@@ -12,49 +12,29 @@ const asyncHandler = require('../middleware/async');
  * @access  Private (Renters)
  */
 exports.createBooking = asyncHandler(async (req, res, next) => {
-    req.body.renter = req.user.id;
+  const { apartment, checkInDate, checkOutDate } = req.body;
 
-    const apartment = await Apartment.findById(req.body.apartment).populate('manager');
+  // 1. Check for conflicting bookings before creating a new one
+  const existingBooking = await Booking.findOne({
+    apartment,
+    status: 'Confirmed',
+    $or: [
+      { checkInDate: { $lt: checkOutDate }, checkOutDate: { $gt: checkInDate } },
+    ],
+  });
 
-    if (!apartment) {
-        return next(new ErrorResponse(`Apartment not found with id of ${req.body.apartment}`, 404));
-    }
+  if (existingBooking) {
+    return next(new ErrorResponse('Sorry, the apartment is already booked for the selected dates.', 400));
+  }
 
-    // Create booking with pending status
-    const booking = await Booking.create({ ...req.body, status: 'Pending' });
+  // 2. Add renter and set initial status
+  req.body.renter = req.user.id;
+  req.body.status = 'Pending'; // All bookings start as pending until payment is confirmed
 
-    // Process payment
-    const paymentResult = await processPayment(booking.totalPrice);
+  // 3. Create the booking
+  const booking = await Booking.create(req.body);
 
-    if (paymentResult.success) {
-      booking.status = 'Confirmed';
-      await booking.save();
-      // Mark apartment as rented
-      apartment.status = 'Rented';
-      await apartment.save();
-
-      // Send notifications
-      const renter = req.user;
-      const owner = apartment.manager;
-
-      const renterMessage = `Your booking for ${apartment.location} is confirmed.`;
-      await sendEmail(renter.email, 'Booking Confirmation', renterMessage);
-      if (renter.phoneNumber) {
-        await sendMessage(renter.phoneNumber, renterMessage);
-      }
-
-      const ownerMessage = `Your apartment ${apartment.location} has been booked.`;
-      await sendEmail(owner.email, 'New Booking', ownerMessage);
-      if (owner.phoneNumber) {
-        await sendMessage(owner.phoneNumber, ownerMessage);
-      }
-
-    } else {
-        // Payment failed, booking remains pending or could be cancelled
-        // For simplicity, we leave it as pending for now
-    }
-
-    res.status(201).json({ success: true, data: booking });
+  res.status(201).json({ success: true, data: booking });
 });
 
 /**
