@@ -4,6 +4,31 @@ const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 /**
+ * Sends a generic email.
+ * @param {string} to - Recipient email address.
+ * @param {string} subject - Email subject.
+ * @param {string} text - Email body (can be HTML).
+ */
+const sendEmail = async (to, subject, html) => {
+  const msg = {
+    to,
+    from: process.env.SENDGRID_FROM_EMAIL,
+    subject,
+    html,
+  };
+
+  try {
+    await sgMail.send(msg);
+    console.log(`Email sent to ${to}`);
+  } catch (error) {
+    console.error(`Error sending email to ${to}:`, error);
+    if (error.response) {
+      console.error(error.response.body)
+    }
+  }
+};
+
+/**
  * Sends a booking confirmation email to both the renter and the owner.
  * @param {object} booking - The booking object, populated with renter and apartment.manager details.
  */
@@ -68,5 +93,6 @@ const sendBookingConfirmation = async (booking) => {
 };
 
 module.exports = {
+  sendEmail,
   sendBookingConfirmation,
 };

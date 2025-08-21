@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../api/axios';
 import Spinner from '../components/Spinner';
 import Alert from '../components/Alert';
 import { useTranslation } from 'react-i18next';

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../api/axios';
 import ApartmentCard from '../components/ApartmentCard';
 import Spinner from '../components/Spinner';
 import Alert from '../components/Alert';
