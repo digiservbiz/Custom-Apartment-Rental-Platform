@@ -43,6 +43,11 @@ const Header = () => {
                     </li>
                 )}
                 <li className="nav-item">
+                  <Link className="nav-link" to="/profile">
+                    {t('my_profile')}
+                  </Link>
+                </li>
+                <li className="nav-item">
                   <button className="btn btn-link nav-link" onClick={logout}>
                     {t('logout')}
                   </button>

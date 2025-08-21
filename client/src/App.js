@@ -18,6 +18,7 @@ import AdminKYCListPage from './pages/admin/KYCListPage';
 import KYCManagementPage from './pages/admin/KYCManagementPage';
 import ReviewModerationPage from './pages/admin/ReviewModerationPage';
 import CommissionPage from './pages/admin/CommissionPage';
+import ProfilePage from './pages/ProfilePage';
 import MyApartmentsPage from './pages/MyApartmentsPage';
 import Header from './components/Header';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -39,6 +40,14 @@ function App() {
           <Route path="/booking/:id" element={<BookingPage />} />
           <Route path="/my-bookings" element={<MyBookingsPage />} />
           <Route path="/review/:apartmentId" element={<LeaveReviewPage />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/my-apartments"
             element={

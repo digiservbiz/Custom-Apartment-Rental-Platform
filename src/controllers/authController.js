@@ -106,6 +106,54 @@ exports.googleCallback = (req, res, next) => {
 };
 
 /**
+ * @desc    Update password
+ * @route   PUT /api/v1/auth/updatepassword
+ * @access  Private
+ */
+exports.updatePassword = asyncHandler(async (req, res, next) => {
+  const { currentPassword, newPassword } = req.body;
+
+  // Get user from the database, making sure to select the password
+  const user = await User.findById(req.user.id).select('+password');
+
+  // Check current password
+  const isMatch = await user.matchPassword(currentPassword);
+
+  if (!isMatch) {
+    return next(new ErrorResponse('Invalid credentials', 401));
+  }
+
+  // Set new password
+  user.password = newPassword;
+  await user.save();
+
+  sendTokenResponse(user, 200, res);
+});
+
+/**
+ * @desc    Update user details
+ * @route   PUT /api/v1/auth/updatedetails
+ * @access  Private
+ */
+exports.updateDetails = asyncHandler(async (req, res, next) => {
+  const { name, email } = req.body;
+
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    { name, email },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
+  res.status(200).json({
+    success: true,
+    data: user,
+  });
+});
+
+/**
  * @desc      Facebook OAuth callback
  * @route     GET /api/v1/auth/facebook/callback
  * @access    Public
