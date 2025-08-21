@@ -83,7 +83,8 @@ const BookingPage = () => {
       setSuccess('Booking created. Please complete your payment.');
       setError('');
     } catch (err) {
-      setError(t('booking_failed'));
+      // Use the specific error message from the backend if it exists, otherwise use a generic one.
+      setError(err.response?.data?.error || t('booking_failed'));
       setSuccess('');
     }
   };
