@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axios from '../api/axios';
 import Alert from '../components/Alert';
 
 const CreateApartmentPage = () => {

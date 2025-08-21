@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../api/axios';
 import Spinner from '../components/Spinner';
 import Alert from '../components/Alert';
 import MockMap from '../components/MockMap';
