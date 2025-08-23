@@ -21,6 +21,9 @@ const ApartmentSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add a description'],
   },
+  amenities: {
+    type: [String],
+  },
   manager: {
     type: mongoose.Schema.ObjectId,
     ref: 'User',

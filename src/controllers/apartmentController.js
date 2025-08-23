@@ -20,14 +20,40 @@ exports.getApartments = asyncHandler(async (req, res, next) => {
     // Loop over removeFields and delete them from reqQuery
     removeFields.forEach(param => delete reqQuery[param]);
 
-    // Create query string
-    let queryStr = JSON.stringify(reqQuery);
+    // Manually construct the query for Mongoose
+    const queryObj = {};
+    for (const key in reqQuery) {
+        if (Object.prototype.hasOwnProperty.call(reqQuery, key)) {
+            const match = key.match(/(.+)\[(.+)\]/); // e.g., pricePerNight[gte]
+            if (match) {
+                const field = match[1];
+                let operator = `$${match[2]}`;
+                let value = reqQuery[key];
 
-    // Create operators ($gt, $gte, etc)
-    queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, match => `$${match}`);
+                // For amenities, we want to match all provided, so we use $all instead of $in
+                if (field === 'amenities' && operator === '$in') {
+                    operator = '$all';
+                }
+
+                if (field === 'pricePerNight' || field === 'maxGuests') {
+                    value = Number(value);
+                }
+                if (field === 'amenities' && (operator === '$in' || operator === '$all')) {
+                    value = value.split(',');
+                }
+
+                if (!queryObj[field]) {
+                    queryObj[field] = {};
+                }
+                queryObj[field][operator] = value;
+            } else {
+                queryObj[key] = reqQuery[key];
+            }
+        }
+    }
 
     // Finding resource
-    query = Apartment.find(JSON.parse(queryStr));
+    query = Apartment.find(queryObj);
 
     // Keyword search
     if (req.query.keyword) {
@@ -39,7 +65,7 @@ exports.getApartments = asyncHandler(async (req, res, next) => {
     const limit = parseInt(req.query.limit, 10) || 10;
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
-    const total = await Apartment.countDocuments(JSON.parse(queryStr));
+    const total = await Apartment.countDocuments(queryObj);
 
     query = query.skip(startIndex).limit(limit);
 

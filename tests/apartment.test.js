@@ -37,6 +37,69 @@ describe('Apartment Endpoints', () => {
       maxGuests: 4,
       photos: ['photo1.jpg'],
       manager: ownerUser._id,
+      amenities: ['parking']
+    });
+
+    // Create more apartments for filtering tests
+    await Apartment.create({
+      location: 'Cheap Place',
+      description: 'A cheap place',
+      pricePerNight: 100,
+      maxGuests: 2,
+      photos: ['photo2.jpg'],
+      manager: ownerUser._id,
+      amenities: ['wifi', 'kitchen']
+    });
+
+    await Apartment.create({
+      location: 'Luxury Villa',
+      description: 'A luxury villa',
+      pricePerNight: 300,
+      maxGuests: 6,
+      photos: ['photo3.jpg'],
+      manager: ownerUser._id,
+      amenities: ['wifi', 'pool']
+    });
+  });
+
+  describe('GET /api/v1/apartments', () => {
+    it('should return all apartments when no filters are applied', async () => {
+      const res = await request.get('/api/v1/apartments');
+      expect(res.statusCode).toBe(200);
+      expect(res.body.count).toBe(3);
+    });
+
+    it('should filter by maxGuests', async () => {
+      const res = await request.get('/api/v1/apartments?maxGuests[gte]=5');
+      expect(res.statusCode).toBe(200);
+      expect(res.body.count).toBe(1);
+      expect(res.body.data[0].location).toBe('Luxury Villa');
+    });
+
+    it('should filter by price', async () => {
+      const res = await request.get('/api/v1/apartments?pricePerNight[lte]=150');
+      expect(res.statusCode).toBe(200);
+      expect(res.body.count).toBe(2);
+    });
+
+    it('should filter by a single amenity', async () => {
+      const res = await request.get('/api/v1/apartments?amenities[in]=pool');
+      expect(res.statusCode).toBe(200);
+      expect(res.body.count).toBe(1);
+      expect(res.body.data[0].location).toBe('Luxury Villa');
+    });
+
+    it('should filter by multiple amenities', async () => {
+      const res = await request.get('/api/v1/apartments?amenities[in]=wifi,kitchen');
+      expect(res.statusCode).toBe(200);
+      expect(res.body.count).toBe(1);
+      expect(res.body.data[0].location).toBe('Cheap Place');
+    });
+
+    it('should combine filters correctly', async () => {
+      const res = await request.get('/api/v1/apartments?pricePerNight[lte]=400&maxGuests[gte]=2&amenities[in]=wifi');
+      expect(res.statusCode).toBe(200);
+      expect(res.body.count).toBe(2); // Cheap Place and Luxury Villa
     });
   });
 
