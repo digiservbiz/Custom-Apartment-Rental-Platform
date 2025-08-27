@@ -4,16 +4,17 @@ import Alert from '../components/Alert';
 
 const CreateApartmentPage = () => {
   const [formData, setFormData] = useState({
-    location: '',
+    address: '',
     photos: '',
     pricePerNight: '',
     maxGuests: '',
     description: '',
+    amenities: '',
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const { location, photos, pricePerNight, maxGuests, description } = formData;
+  const { address, photos, pricePerNight, maxGuests, description, amenities } = formData;
 
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -21,11 +22,12 @@ const CreateApartmentPage = () => {
   const onSubmit = async (e) => {
     e.preventDefault();
     const newApartment = {
-        location,
+        address,
         photos: photos.split(',').map(photo => photo.trim()),
         pricePerNight,
         maxGuests,
-        description
+        description,
+        amenities: amenities.split(',').map(amenity => amenity.trim()),
     }
     try {
         const token = localStorage.getItem('token');
@@ -37,17 +39,24 @@ const CreateApartmentPage = () => {
         }
         const body = JSON.stringify(newApartment);
         await axios.post('/api/v1/apartments', body, config);
-        setSuccess('Apartment created successfully!');
+        setSuccess('Apartment created successfully! You will be redirected to your apartments list.');
         setError('');
         setFormData({
-            location: '',
+            address: '',
             photos: '',
             pricePerNight: '',
             maxGuests: '',
             description: '',
+            amenities: '',
         });
+        // Optional: redirect user after a delay
+        setTimeout(() => {
+            // Assuming you have history or navigate object from react-router-dom
+            // For simplicity, we'll just clear the success message
+            setSuccess('');
+        }, 3000);
     } catch (err) {
-        setError('Error creating apartment');
+        setError(err.response?.data?.error || 'Error creating apartment');
         setSuccess('');
     }
   };
@@ -59,18 +68,18 @@ const CreateApartmentPage = () => {
       {success && <Alert type="success" message={success} />}
       <form onSubmit={onSubmit}>
         <div className="form-group">
-          <label>Location</label>
+          <label>Address</label>
           <input
             type="text"
-            name="location"
-            value={location}
+            name="address"
+            value={address}
             onChange={onChange}
             className="form-control"
             required
           />
         </div>
         <div className="form-group">
-          <label>Photos (comma separated URLs)</label>
+          <label>Photos (comma-separated URLs)</label>
           <input
             type="text"
             name="photos"
@@ -101,6 +110,16 @@ const CreateApartmentPage = () => {
             className="form-control"
             required
           />
+        </div>
+        <div className="form-group">
+            <label>Amenities (comma-separated)</label>
+            <input
+                type="text"
+                name="amenities"
+                value={amenities}
+                onChange={onChange}
+                className="form-control"
+            />
         </div>
         <div className="form-group">
           <label>Description</label>

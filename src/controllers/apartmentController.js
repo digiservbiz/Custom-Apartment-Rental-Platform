@@ -2,6 +2,7 @@ const Apartment = require('../models/Apartment');
 const User = require('../models/User');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
+const geocoder = require('../utils/geocoder');
 
 /**
  * @desc    Get all apartments
@@ -52,13 +53,13 @@ exports.getApartments = asyncHandler(async (req, res, next) => {
         }
     }
 
-    // Finding resource
-    query = Apartment.find(queryObj);
-
     // Keyword search
     if (req.query.keyword) {
-        query = query.find({ location: { $regex: req.query.keyword, $options: 'i' } });
+        queryObj.address = { $regex: req.query.keyword, $options: 'i' };
     }
+
+    // Finding resource
+    query = Apartment.find(queryObj);
 
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;
@@ -134,13 +135,15 @@ exports.updateApartment = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse(`User ${req.user.id} is not authorized to update this apartment`, 401));
     }
 
+    // Update fields
     apartment = await Apartment.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
+        new: true,
+        runValidators: true
     });
 
     res.status(200).json({ success: true, data: apartment });
 });
+
 
 /**
  * @desc    Delete apartment
@@ -180,7 +183,7 @@ exports.checkAvailability = asyncHandler(async (req, res, next) => {
         return next(new ErrorResponse('Manager has no phone number', 400));
     }
 
-    const message = `A renter is interested in your apartment ${apartment.location} (ID: ${apartment._id}). Is it available? Please reply with 'Yes ${apartment._id}' or 'No ${apartment._id}'.`;
+    const message = `A renter is interested in your apartment ${apartment.address} (ID: ${apartment._id}). Is it available? Please reply with 'Yes ${apartment._id}' or 'No ${apartment._id}'.`;
 
     // Use the WhatsApp service to send the check
     const { sendAvailabilityCheck } = require('../services/whatsappService');
