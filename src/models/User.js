@@ -20,6 +20,13 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: false, // Not all users need a phone number
   },
+  bio: {
+    type: String,
+    maxlength: 500,
+  },
+  profilePicture: {
+    type: String,
+  },
   password: {
     type: String,
     required: [
