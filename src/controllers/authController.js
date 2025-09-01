@@ -136,16 +136,24 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
  * @access  Private
  */
 exports.updateDetails = asyncHandler(async (req, res, next) => {
-  const { name, email } = req.body;
+  const { name, email, bio, profilePicture } = req.body;
 
-  const user = await User.findByIdAndUpdate(
-    req.user.id,
-    { name, email },
-    {
-      new: true,
-      runValidators: true,
-    }
+  const fieldsToUpdate = {
+    name,
+    email,
+    bio,
+    profilePicture,
+  };
+
+  // Remove fields that were not provided, so we don't overwrite with null
+  Object.keys(fieldsToUpdate).forEach(
+    (key) => fieldsToUpdate[key] === undefined && delete fieldsToUpdate[key]
   );
+
+  const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+    new: true,
+    runValidators: true,
+  });
 
   res.status(200).json({
     success: true,
