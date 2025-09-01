@@ -14,7 +14,7 @@ def run(playwright: Playwright) -> None:
     page.wait_for_url("http://localhost:3000/")
     page.goto("http://localhost:3000/profile")
     page.get_by_label("Bio").click()
-    page.get_by_label("Bio").fill("This is my bio.")
+    page.get_by_label("Bio").fill("This is a test bio.")
     page.get_by_label("Profile Picture URL").click()
     page.get_by_label("Profile Picture URL").fill("https://i.imgur.com/6VBx3io.png")
     page.get_by_role("button", name="Save Changes").click()

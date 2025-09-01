@@ -136,17 +136,16 @@ exports.updatePassword = asyncHandler(async (req, res, next) => {
  * @access  Private
  */
 exports.updateDetails = asyncHandler(async (req, res, next) => {
-  const fieldsToUpdate = {
-    name: req.body.name,
-    email: req.body.email,
-    bio: req.body.bio,
-    profilePicture: req.body.profilePicture,
-  };
+  const { name, email } = req.body;
 
-  const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
-    new: true,
-    runValidators: true,
-  });
+  const user = await User.findByIdAndUpdate(
+    req.user.id,
+    { name, email },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 
   res.status(200).json({
     success: true,
