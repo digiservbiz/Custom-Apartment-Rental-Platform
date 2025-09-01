@@ -22,7 +22,7 @@ const UserSchema = new mongoose.Schema({
   },
   bio: {
     type: String,
-    maxlength: 500,
+    maxlength: 500
   },
   profilePicture: {
     type: String,
