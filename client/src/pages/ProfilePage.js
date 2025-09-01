@@ -5,14 +5,12 @@ import Spinner from '../components/Spinner';
 import Alert from '../components/Alert';
 
 const ProfilePage = () => {
-  const { user, loading: userLoading, refreshUser } = useContext(AuthContext);
+  const { user, loading: userLoading } = useContext(AuthContext);
 
   // State for Update Details form
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    bio: '',
-    profilePicture: '',
   });
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsError, setDetailsError] = useState('');
@@ -34,13 +32,11 @@ const ProfilePage = () => {
       setFormData({
         name: user.name,
         email: user.email,
-        bio: user.bio || '',
-        profilePicture: user.profilePicture || '',
       });
     }
   }, [user]);
 
-  const { name, email, bio, profilePicture } = formData;
+  const { name, email } = formData;
 
   const onChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -57,14 +53,9 @@ const ProfilePage = () => {
           Authorization: `Bearer ${token}`,
         },
       };
-      await axios.put('/api/v1/auth/updatedetails', { name, email, bio, profilePicture }, config);
-      setDetailsSuccess('Profile updated successfully!');
+      await axios.put('/api/v1/auth/updatedetails', { name, email }, config);
+      setDetailsSuccess('Profile updated successfully! The changes will be reflected on your next login.');
       setDetailsLoading(false);
-
-      // Refresh user context to show updated info immediately
-      if (refreshUser) {
-        await refreshUser();
-      }
     } catch (err) {
       setDetailsError(err.response?.data?.error || 'Failed to update profile.');
       setDetailsLoading(false);
@@ -114,16 +105,6 @@ const ProfilePage = () => {
         <h2>Update Profile</h2>
         <p>Manage your account details.</p>
 
-        {profilePicture && (
-            <img
-                src={profilePicture}
-                alt="Profile"
-                className="img-fluid rounded-circle mb-3"
-                style={{ width: '150px', height: '150px', objectFit: 'cover' }}
-                onError={(e) => { e.target.onerror = null; e.target.src="https://via.placeholder.com/150" }}
-            />
-        )}
-
         {detailsError && <Alert type="danger" message={detailsError} />}
         {detailsSuccess && <Alert type="success" message={detailsSuccess} />}
 
@@ -151,30 +132,6 @@ const ProfilePage = () => {
               onChange={onChange}
               required
             />
-          </div>
-          <div className="form-group mt-3">
-            <label htmlFor="profilePicture">Profile Picture URL</label>
-            <input
-              type="text"
-              id="profilePicture"
-              name="profilePicture"
-              className="form-control"
-              placeholder="https://example.com/image.jpg"
-              value={profilePicture}
-              onChange={onChange}
-            />
-          </div>
-          <div className="form-group mt-3">
-            <label htmlFor="bio">Bio</label>
-            <textarea
-              id="bio"
-              name="bio"
-              className="form-control"
-              rows="3"
-              placeholder="Tell us a little about yourself"
-              value={bio}
-              onChange={onChange}
-            ></textarea>
           </div>
           <button type="submit" className="btn btn-primary mt-3" disabled={detailsLoading}>
             {detailsLoading ? 'Saving...' : 'Save Changes'}

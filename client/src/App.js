@@ -33,96 +33,124 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/apartments" element={<ApartmentListPage />} />
-          <Route path="/apartments/:id" element={<ApartmentDetailsPage />} />
-          <Route path="/create-apartment" element={<CreateApartmentPage />} />
-          <Route path="/booking/:id" element={<BookingPage />} />
-          <Route path="/my-bookings" element={<MyBookingsPage />} />
-          <Route path="/review/:apartmentId" element={<LeaveReviewPage />} />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <ProfilePage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/my-apartments"
-            element={
-              <ProtectedRoute roles={['owner', 'agent', 'admin']}>
-                <MyApartmentsPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/dashboard"
-            element={
-              <AdminRoute>
-                <AdminDashboardPage />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/users"
-            element={
-              <AdminRoute>
-                <UserListPage />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/apartments"
-            element={
-              <AdminRoute>
-                <AdminApartmentListPage />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/reviews"
-            element={
-              <AdminRoute>
-                <AdminReviewListPage />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/kyc"
-            element={
-              <AdminRoute>
-                <AdminKYCListPage />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/kyc-management"
-            element={
-              <AdminRoute>
-                <KYCManagementPage />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/review-moderation"
-            element={
-              <AdminRoute>
-                <ReviewModerationPage />
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/admin/commission"
-            element={
-              <AdminRoute>
-                <CommissionPage />
-              </AdminRoute>
-            }
-          />
-        </Routes>
-      </div>
-    </main>
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/apartments" element={<ApartmentListPage />} />
+            <Route path="/apartments/:id" element={<ApartmentDetailsPage />} />
+            <Route
+              path="/create-apartment"
+              element={
+                <ProtectedRoute>
+                  <CreateApartmentPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/booking/:id"
+              element={
+                <ProtectedRoute>
+                  <BookingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-bookings"
+              element={
+                <ProtectedRoute>
+                  <MyBookingsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/review/:id"
+              element={
+                <ProtectedRoute>
+                  <LeaveReviewPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/my-apartments"
+              element={
+                <ProtectedRoute roles={['owner', 'agent', 'admin']}>
+                  <MyApartmentsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/dashboard"
+              element={
+                <AdminRoute>
+                  <AdminDashboardPage />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <AdminRoute>
+                  <UserListPage />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/apartments"
+              element={
+                <AdminRoute>
+                  <AdminApartmentListPage />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/reviews"
+              element={
+                <AdminRoute>
+                  <AdminReviewListPage />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/kyc"
+              element={
+                <AdminRoute>
+                  <AdminKYCListPage />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/kyc-management"
+              element={
+                <AdminRoute>
+                  <KYCManagementPage />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/review-moderation"
+              element={
+                <AdminRoute>
+                  <ReviewModerationPage />
+                </AdminRoute>
+              }
+            />
+            <Route
+              path="/admin/commission"
+              element={
+                <AdminRoute>
+                  <CommissionPage />
+                </AdminRoute>
+              }
+            />
+          </Routes>
+        </div>
+      </main>
     </Router>
   );
 }

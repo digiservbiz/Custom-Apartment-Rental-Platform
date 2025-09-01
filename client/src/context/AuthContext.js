@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import axios from '../api/axios';
 
 const AuthContext = createContext();
@@ -7,31 +7,25 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const loadUser = useCallback(async () => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const { data } = await axios.get('/api/v1/auth/me', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUser(data.data);
-      } catch (error) {
-        console.error('Error loading user', error);
-        localStorage.removeItem('token');
-        setUser(null);
-      }
-    }
-    setLoading(false);
-  }, []);
-
   useEffect(() => {
-    loadUser();
-  }, [loadUser]);
+    const loadUser = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const { data } = await axios.get('/api/v1/auth/me', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setUser(data.data);
+        } catch (error) {
+          console.error('Error loading user', error);
+          localStorage.removeItem('token');
+        }
+      }
+      setLoading(false);
+    };
 
-  const refreshUser = async () => {
-    setLoading(true);
-    await loadUser();
-  };
+    loadUser();
+  }, []);
 
   const login = async (email, password) => {
     const { data } = await axios.post('/api/v1/auth/login', { email, password });
@@ -74,7 +68,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, register, socialLoginCallback, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, register, socialLoginCallback }}>
       {children}
     </AuthContext.Provider>
   );
