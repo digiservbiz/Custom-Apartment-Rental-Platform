@@ -12,6 +12,7 @@ const ApartmentListPage = () => {
   const [keyword, setKeyword] = useState('');
   const [price, setPrice] = useState({ min: '', max: '' });
   const [guests, setGuests] = useState('');
+  const [sort, setSort] = useState('-createdAt');
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({});
   const { t } = useTranslation();
@@ -19,7 +20,7 @@ const ApartmentListPage = () => {
   const fetchApartments = async (pageNumber = 1) => {
     try {
       setLoading(true);
-      let url = `/api/v1/apartments?keyword=${keyword}&page=${pageNumber}`;
+      let url = `/api/v1/apartments?keyword=${keyword}&page=${pageNumber}&sort=${sort}`;
       if (price.min) url += `&pricePerNight[gte]=${price.min}`;
       if (price.max) url += `&pricePerNight[lte]=${price.max}`;
       if (guests) url += `&maxGuests[gte]=${guests}`;
@@ -36,29 +37,27 @@ const ApartmentListPage = () => {
   };
 
   useEffect(() => {
-    fetchApartments();
-  }, []);
+    fetchApartments(1);
+  }, [sort]);
 
   const submitHandler = (e) => {
     e.preventDefault();
-    fetchApartments();
+    fetchApartments(1);
   };
 
   return (
     <div>
       <h1>{t('apartments')}</h1>
       <form onSubmit={submitHandler} className="mb-4">
-        <div className="row">
-          <div className="col-md-6">
-            <div className="input-group">
-              <input
-                type="text"
-                className="form-control"
-                placeholder={t('search_by_location')}
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-              />
-            </div>
+        <div className="row g-2">
+          <div className="col-md-4">
+            <input
+              type="text"
+              className="form-control"
+              placeholder={t('search_by_location')}
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+            />
           </div>
           <div className="col-md-2">
             <input
@@ -86,6 +85,13 @@ const ApartmentListPage = () => {
               value={guests}
               onChange={(e) => setGuests(e.target.value)}
             />
+          </div>
+          <div className="col-md-2">
+            <select className="form-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+                <option value="-createdAt">{t('newest')}</option>
+                <option value="pricePerNight">{t('price_asc')}</option>
+                <option value="-pricePerNight">{t('price_desc')}</option>
+            </select>
           </div>
         </div>
         <button className="btn btn-primary mt-2" type="submit">

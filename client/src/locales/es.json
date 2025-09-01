@@ -58,5 +58,9 @@
   "you_have_no_bookings": "No tienes reservas.",
   "you_have_no_apartments": "No tienes apartamentos.",
   "create_new_apartment": "Crear Nuevo Apartamento",
-  "loading": "Cargando..."
+  "loading": "Cargando...",
+  "sort_by": "Ordenar por",
+  "newest": "Más recientes",
+  "price_asc": "Precio: Más bajo a más alto",
+  "price_desc": "Precio: Más alto a más bajo"
 }

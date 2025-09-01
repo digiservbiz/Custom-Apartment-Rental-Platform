@@ -58,5 +58,9 @@
   "you_have_no_bookings": "You have no bookings.",
   "you_have_no_apartments": "You have no apartments.",
   "create_new_apartment": "Create New Apartment",
-  "loading": "Loading..."
+  "loading": "Loading...",
+  "sort_by": "Sort by",
+  "newest": "Newest",
+  "price_asc": "Price: Low to High",
+  "price_desc": "Price: High to Low"
 }

@@ -34,6 +34,14 @@ exports.getApartments = asyncHandler(async (req, res, next) => {
         query = query.find({ location: { $regex: req.query.keyword, $options: 'i' } });
     }
 
+    // Sort
+    if (req.query.sort) {
+        const sortBy = req.query.sort.split(',').join(' ');
+        query = query.sort(sortBy);
+    } else {
+        query = query.sort('-createdAt');
+    }
+
     // Pagination
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
