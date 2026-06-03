@@ -103,6 +103,24 @@ exports.getMyBookings = asyncHandler(async (req, res, next) => {
 });
 
 /**
+ * @desc    Get bookings for apartments managed by the logged-in user
+ * @route   GET /api/v1/bookings/owner-bookings
+ * @access  Private (Owners, Agents)
+ */
+exports.getOwnerBookings = asyncHandler(async (req, res, next) => {
+    const Apartment = require('../models/Apartment');
+    const myApartments = await Apartment.find({ manager: req.user.id }).select('_id');
+    const apartmentIds = myApartments.map((a) => a._id);
+
+    const bookings = await Booking.find({ apartment: { $in: apartmentIds } })
+      .populate('apartment', 'location pricePerNight')
+      .populate('renter', 'name email phoneNumber')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({ success: true, count: bookings.length, data: bookings });
+});
+
+/**
  * @desc    Get single booking
  * @route   GET /api/v1/bookings/:id
  * @access  Private

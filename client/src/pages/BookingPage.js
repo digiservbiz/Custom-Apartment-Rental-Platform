@@ -8,7 +8,6 @@ import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '../components/CheckoutForm';
 import { loadStripe } from '@stripe/stripe-js';
 
-// Load the Stripe promise outside of the component render
 const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLIC_KEY);
 
 const BookingPage = () => {
@@ -16,117 +15,118 @@ const BookingPage = () => {
   const [apartment, setApartment] = useState(null);
   const [checkInDate, setCheckInDate] = useState('');
   const [checkOutDate, setCheckOutDate] = useState('');
-  const [totalPrice, setTotalPrice] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [booking, setBooking] = useState(null);
   const [clientSecret, setClientSecret] = useState('');
   const { t } = useTranslation();
 
   useEffect(() => {
-    const fetchApartment = async () => {
-      try {
-        const { data } = await axios.get(`/api/v1/apartments/${id}`);
-        setApartment(data.data);
-        setLoading(false);
-      } catch (err) {
-        setError('Error fetching apartment details');
-        setLoading(false);
-      }
-    };
-
-    fetchApartment();
+    axios
+      .get(`/api/v1/apartments/${id}`)
+      .then(({ data }) => setApartment(data.data))
+      .catch(() => setError('Error fetching apartment details'))
+      .finally(() => setLoading(false));
   }, [id]);
 
-  useEffect(() => {
-    if (checkInDate && checkOutDate && apartment) {
-      const oneDay = 24 * 60 * 60 * 1000;
-      const firstDate = new Date(checkInDate);
-      const secondDate = new Date(checkOutDate);
-      const diffDays = Math.round(Math.abs((firstDate - secondDate) / oneDay));
-      if (diffDays > 0) {
-        setTotalPrice(diffDays * apartment.pricePerNight);
-      } else {
-        setTotalPrice(0);
-      }
-    }
-  }, [checkInDate, checkOutDate, apartment]);
+  // Estimate price locally for display only
+  const estimatedNights =
+    checkInDate && checkOutDate
+      ? Math.ceil((new Date(checkOutDate) - new Date(checkInDate)) / (1000 * 60 * 60 * 24))
+      : 0;
+  const estimatedPrice =
+    estimatedNights > 0 && apartment ? estimatedNights * apartment.pricePerNight : 0;
+
+  const today = new Date().toISOString().split('T')[0];
 
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
-    if (totalPrice === 0) {
-      setError('Check-out date must be after check-in date');
-      return;
+    if (!checkInDate || !checkOutDate) {
+      return setError('Please select check-in and check-out dates');
     }
-    const newBooking = {
-      apartment: id,
-      checkInDate,
-      checkOutDate,
-      totalPrice,
-    };
+    if (new Date(checkOutDate) <= new Date(checkInDate)) {
+      return setError('Check-out date must be after check-in date');
+    }
+    setSubmitting(true);
+    setError('');
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      };
+      const { data: bookingData } = await axios.post('/api/v1/bookings', {
+        apartment: id,
+        checkInDate,
+        checkOutDate,
+      });
+      setBooking(bookingData.data);
 
-      // 1. Create the booking to get a bookingId
-      const { data: bookingData } = await axios.post('/api/v1/bookings', newBooking, config);
-
-      // 2. Create a Payment Intent with the new bookingId
-      const { data: paymentData } = await axios.post('/api/v1/payments/create-payment-intent', { bookingId: bookingData.data._id }, config);
-
+      const { data: paymentData } = await axios.post('/api/v1/payments/create-payment-intent', {
+        bookingId: bookingData.data._id,
+      });
       setClientSecret(paymentData.clientSecret);
-      setSuccess('Booking created. Please complete your payment.');
-      setError('');
     } catch (err) {
-      // Use the specific error message from the backend if it exists, otherwise use a generic one.
       setError(err.response?.data?.error || t('booking_failed'));
-      setSuccess('');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  if (loading) {
-    return <Spinner />;
-  }
+  if (loading) return <Spinner />;
+  if (!apartment) return <Alert type="danger" message={error || 'Apartment not found'} />;
 
   return (
-    <div>
-      {apartment && <h1>{t('book_apartment')} {apartment.location}</h1>}
+    <div style={{ maxWidth: '600px' }}>
+      <h1>{t('book_apartment')}: {apartment.location}</h1>
+      <p className="text-muted">${apartment.pricePerNight} / night</p>
+
       {error && <Alert type="danger" message={error} />}
-      {success && <Alert type="success" message={success} />}
 
       {!clientSecret ? (
         <form onSubmit={handleBookingSubmit}>
-          <div className="form-group">
-            <label>{t('check_in_date')}</label>
+          <div className="form-group mb-3">
+            <label htmlFor="checkIn">{t('check_in_date')}</label>
             <input
               type="date"
+              id="checkIn"
               value={checkInDate}
+              min={today}
               onChange={(e) => setCheckInDate(e.target.value)}
               className="form-control"
               required
             />
           </div>
-          <div className="form-group">
-            <label>{t('check_out_date')}</label>
+          <div className="form-group mb-3">
+            <label htmlFor="checkOut">{t('check_out_date')}</label>
             <input
               type="date"
+              id="checkOut"
               value={checkOutDate}
+              min={checkInDate || today}
               onChange={(e) => setCheckOutDate(e.target.value)}
               className="form-control"
               required
             />
           </div>
-          {totalPrice > 0 && <h2>{t('total_price')}: ${totalPrice}</h2>}
-          <button type="submit" className="btn btn-primary mt-3">{t('confirm_and_pay')}</button>
+
+          {estimatedNights > 0 && (
+            <div className="alert alert-info">
+              <strong>Estimated total:</strong> ${estimatedPrice.toFixed(2)}
+              <small className="d-block text-muted">
+                ({estimatedNights} night{estimatedNights > 1 ? 's' : ''} × ${apartment.pricePerNight} + platform commission)
+              </small>
+            </div>
+          )}
+
+          <button type="submit" className="btn btn-primary w-100" disabled={submitting}>
+            {submitting ? 'Creating booking…' : t('confirm_and_pay')}
+          </button>
         </form>
       ) : (
         <div>
-          <h2>Complete Your Payment</h2>
+          <Alert type="success" message="Booking created! Complete your payment below." />
+          {booking && (
+            <p>
+              <strong>Total charged:</strong> ${booking.totalPrice}
+            </p>
+          )}
           <Elements options={{ clientSecret }} stripe={stripePromise}>
             <CheckoutForm />
           </Elements>

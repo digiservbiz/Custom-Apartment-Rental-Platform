@@ -100,8 +100,15 @@ const ApartmentListPage = () => {
       ) : (
         <>
             <div className="row">
-            {apartments.map((apartment) => (
-                <div className="col-md-4" key={apartment._id}>
+            {apartments.length === 0 ? (
+              <div className="col-12 text-center py-5 text-muted">
+                <p className="fs-5">No apartments found matching your search.</p>
+                <button className="btn btn-outline-secondary" onClick={() => { setKeyword(''); setPrice({ min: '', max: '' }); setGuests(''); fetchApartments(); }}>
+                  Clear filters
+                </button>
+              </div>
+            ) : apartments.map((apartment) => (
+                <div className="col-md-4 mb-4" key={apartment._id}>
                 <ApartmentCard apartment={apartment} />
                 </div>
             ))}

@@ -5,63 +5,59 @@ import Alert from './Alert';
 const ReviewForm = ({ apartmentId }) => {
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState('');
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    const newReview = {
-      apartment: apartmentId,
-      rating,
-      comment,
-    };
+    setLoading(true);
+    setError('');
+    setSuccess('');
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      };
-      const body = JSON.stringify(newReview);
-      await axios.post('/api/v1/reviews', body, config);
-      setSuccess('Review submitted successfully! It will be visible after moderation.');
-      setError('');
+      await axios.post(`/api/v1/apartments/${apartmentId}/reviews`, { rating: Number(rating), comment });
+      setSuccess('Review submitted! It will be visible after moderation.');
       setRating(5);
       setComment('');
     } catch (err) {
-      setError('Error submitting review');
-      setSuccess('');
+      setError(err.response?.data?.error || 'Error submitting review');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <form onSubmit={onSubmit}>
-      <h2>Leave a Review</h2>
       {error && <Alert type="danger" message={error} />}
       {success && <Alert type="success" message={success} />}
-      <div className="form-group">
-        <label>Rating</label>
+      <div className="form-group mb-3">
+        <label htmlFor="rating">Rating (1–5)</label>
         <input
           type="number"
+          id="rating"
           min="1"
           max="5"
           value={rating}
           onChange={(e) => setRating(e.target.value)}
           className="form-control"
+          style={{ maxWidth: '100px' }}
           required
         />
       </div>
-      <div className="form-group">
-        <label>Comment</label>
+      <div className="form-group mb-3">
+        <label htmlFor="comment">Comment</label>
         <textarea
+          id="comment"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           className="form-control"
+          rows={4}
           required
-        ></textarea>
+        />
       </div>
-      <button type="submit" className="btn btn-primary mt-3">Submit Review</button>
+      <button type="submit" className="btn btn-primary" disabled={loading || !!success}>
+        {loading ? 'Submitting...' : 'Submit Review'}
+      </button>
     </form>
   );
 };

@@ -58,6 +58,7 @@ const reviews = require('./routes/reviews');
 const users = require('./routes/users');
 const payments = require('./routes/payments');
 const settings = require('./routes/settings');
+const admin = require('./routes/admin');
 
 app.use('/api/v1/auth', authLimiter, auth);
 app.use('/api/v1/apartments', apartments);
@@ -67,6 +68,7 @@ app.use('/api/v1/reviews', reviews);
 app.use('/api/v1/users', users);
 app.use('/api/v1/payments', payments);
 app.use('/api/v1/settings', settings);
+app.use('/api/v1/admin', admin);
 
 const errorHandler = require('./middleware/error');
 app.use(errorHandler);

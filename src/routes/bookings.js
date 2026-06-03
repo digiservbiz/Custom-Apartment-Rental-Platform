@@ -3,6 +3,7 @@ const {
   createBooking,
   getBookings,
   getMyBookings,
+  getOwnerBookings,
   getBooking,
 } = require('../controllers/bookingController');
 
@@ -16,6 +17,7 @@ router
   .get(protect, authorize('admin'), getBookings);
 
 router.route('/mybookings').get(protect, getMyBookings);
+router.route('/owner-bookings').get(protect, authorize('owner', 'agent', 'admin'), getOwnerBookings);
 
 router.route('/:id').get(protect, getBooking);
 
