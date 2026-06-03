@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const passport = require('passport');
+const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 
 // Load env vars
@@ -16,19 +17,31 @@ const { stripeWebhook } = require('./controllers/paymentController');
 
 const app = express();
 
-// Stripe webhook
-// Note: This route must be defined before express.json() to ensure we get the raw request body.
+// Stripe webhook must be before body parser to get raw body
 app.post(
   '/api/v1/payments/stripe-webhook',
   express.raw({ type: 'application/json' }),
   stripeWebhook
 );
 
-// Body parser
-app.use(express.json());
+// Body parser with size limit
+app.use(express.json({ limit: '10kb' }));
 
 // Enable CORS
-app.use(cors());
+const allowedOrigins = process.env.CLIENT_URL
+  ? [process.env.CLIENT_URL]
+  : ['http://localhost:3000'];
+
+app.use(cors({ origin: allowedOrigins, credentials: true }));
+
+// Rate limiting for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  message: { success: false, error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Passport Config
 require('./config/passport')(passport);
@@ -46,7 +59,7 @@ const users = require('./routes/users');
 const payments = require('./routes/payments');
 const settings = require('./routes/settings');
 
-app.use('/api/v1/auth', auth);
+app.use('/api/v1/auth', authLimiter, auth);
 app.use('/api/v1/apartments', apartments);
 app.use('/api/v1/whatsapp', whatsapp);
 app.use('/api/v1/bookings', bookings);

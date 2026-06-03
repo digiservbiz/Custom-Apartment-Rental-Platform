@@ -9,8 +9,15 @@ const asyncHandler = require('../middleware/async');
  * @access  Private (Admin)
  */
 exports.getUsers = asyncHandler(async (req, res, next) => {
-    const users = await User.find();
-    res.status(200).json({ success: true, count: users.length, data: users });
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
+    const skip = (page - 1) * limit;
+
+    const safeFields = 'name email phoneNumber role kycStatus createdAt';
+    const total = await User.countDocuments();
+    const users = await User.find().select(safeFields).skip(skip).limit(limit);
+
+    res.status(200).json({ success: true, count: users.length, total, page, data: users });
 });
 
 /**
@@ -19,7 +26,7 @@ exports.getUsers = asyncHandler(async (req, res, next) => {
  * @access  Private (Admin)
  */
 exports.getUser = asyncHandler(async (req, res, next) => {
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).select('name email phoneNumber role kycStatus createdAt');
     if (!user) {
         return next(new ErrorResponse(`User not found with id of ${req.params.id}`, 404));
     }
@@ -50,10 +57,19 @@ exports.updateUserStatus = asyncHandler(async (req, res, next) => {
  * @access  Private (Admin)
  */
 exports.updateUser = asyncHandler(async (req, res, next) => {
+    // Prevent changing role or password through this endpoint
+    delete req.body.password;
+    delete req.body.role;
+
     const user = await User.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
         runValidators: true,
-    });
+    }).select('name email phoneNumber role kycStatus createdAt');
+
+    if (!user) {
+        return next(new ErrorResponse(`User not found with id of ${req.params.id}`, 404));
+    }
+
     res.status(200).json({ success: true, data: user });
 });
 
@@ -63,6 +79,12 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
  * @access  Private (Admin)
  */
 exports.deleteUser = asyncHandler(async (req, res, next) => {
-    await User.findByIdAndDelete(req.params.id);
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+        return next(new ErrorResponse(`User not found with id of ${req.params.id}`, 404));
+    }
+
+    await user.deleteOne();
     res.status(200).json({ success: true, data: {} });
 });

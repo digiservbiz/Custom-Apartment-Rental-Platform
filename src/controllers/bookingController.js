@@ -1,8 +1,6 @@
 const Booking = require('../models/Booking');
 const Apartment = require('../models/Apartment');
-const { processPayment } = require('../services/paymentService');
-const { sendEmail } = require('../services/emailService');
-const { sendMessage } = require('../services/whatsappService');
+const Setting = require('../models/Setting');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 
@@ -14,12 +12,38 @@ const asyncHandler = require('../middleware/async');
 exports.createBooking = asyncHandler(async (req, res, next) => {
   const { apartment, checkInDate, checkOutDate } = req.body;
 
-  // 1. Check for conflicting bookings before creating a new one
+  // Validate required fields
+  if (!apartment || !checkInDate || !checkOutDate) {
+    return next(new ErrorResponse('Please provide apartment, checkInDate and checkOutDate', 400));
+  }
+
+  const checkIn = new Date(checkInDate);
+  const checkOut = new Date(checkOutDate);
+
+  if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) {
+    return next(new ErrorResponse('Invalid date format', 400));
+  }
+
+  if (checkOut <= checkIn) {
+    return next(new ErrorResponse('Check-out date must be after check-in date', 400));
+  }
+
+  if (checkIn < new Date()) {
+    return next(new ErrorResponse('Check-in date cannot be in the past', 400));
+  }
+
+  // Verify apartment exists
+  const apartmentDoc = await Apartment.findById(apartment);
+  if (!apartmentDoc) {
+    return next(new ErrorResponse(`Apartment not found with id of ${apartment}`, 404));
+  }
+
+  // Check for conflicting confirmed bookings
   const existingBooking = await Booking.findOne({
     apartment,
     status: 'Confirmed',
     $or: [
-      { checkInDate: { $lt: checkOutDate }, checkOutDate: { $gt: checkInDate } },
+      { checkInDate: { $lt: checkOut }, checkOutDate: { $gt: checkIn } },
     ],
   });
 
@@ -27,12 +51,20 @@ exports.createBooking = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Sorry, the apartment is already booked for the selected dates.', 400));
   }
 
-  // 2. Add renter and set initial status
-  req.body.renter = req.user.id;
-  req.body.status = 'Pending'; // All bookings start as pending until payment is confirmed
+  // Calculate total price with commission
+  const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+  const commissionSetting = await Setting.findOne({ key: 'commission_fee' });
+  const commissionRate = commissionSetting ? parseFloat(commissionSetting.value) : 10;
+  const totalPrice = parseFloat((nights * apartmentDoc.pricePerNight * (1 + commissionRate / 100)).toFixed(2));
 
-  // 3. Create the booking
-  const booking = await Booking.create(req.body);
+  const booking = await Booking.create({
+    apartment,
+    checkInDate: checkIn,
+    checkOutDate: checkOut,
+    totalPrice,
+    renter: req.user.id,
+    status: 'Pending',
+  });
 
   res.status(201).json({ success: true, data: booking });
 });
@@ -43,8 +75,19 @@ exports.createBooking = asyncHandler(async (req, res, next) => {
  * @access  Private (Admin)
  */
 exports.getBookings = asyncHandler(async (req, res, next) => {
-    const bookings = await Booking.find().populate('apartment', 'location').populate('renter', 'name email');
-    res.status(200).json({ success: true, count: bookings.length, data: bookings });
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 20;
+    const skip = (page - 1) * limit;
+
+    const total = await Booking.countDocuments();
+    const bookings = await Booking.find()
+      .populate('apartment', 'location pricePerNight')
+      .populate('renter', 'name email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.status(200).json({ success: true, count: bookings.length, total, page, data: bookings });
 });
 
 /**
@@ -53,7 +96,9 @@ exports.getBookings = asyncHandler(async (req, res, next) => {
  * @access  Private
  */
 exports.getMyBookings = asyncHandler(async (req, res, next) => {
-    const bookings = await Booking.find({ renter: req.user.id }).populate('apartment', 'location');
+    const bookings = await Booking.find({ renter: req.user.id })
+      .populate('apartment', 'location pricePerNight photos description')
+      .sort({ createdAt: -1 });
     res.status(200).json({ success: true, count: bookings.length, data: bookings });
 });
 

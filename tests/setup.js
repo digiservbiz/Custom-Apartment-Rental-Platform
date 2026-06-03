@@ -1,3 +1,7 @@
+// Pin MongoDB version compatible with Ubuntu 24.04 for mongodb-memory-server
+process.env.MONGOMS_VERSION = '7.0.14';
+process.env.MONGOMS_DISTRO = 'ubuntu2204';
+
 // Set dummy env vars for tests to prevent errors during initialization
 process.env.JWT_SECRET = 'test_secret';
 process.env.JWT_EXPIRE = '10m';
@@ -5,9 +9,12 @@ process.env.JWT_COOKIE_EXPIRE = '30';
 
 // External Services
 process.env.SENDGRID_API_KEY = 'SG.dummy_key';
+process.env.SENDGRID_FROM_EMAIL = 'test@example.com';
 process.env.TWILIO_ACCOUNT_SID = 'AC' + 'a'.repeat(32);
 process.env.TWILIO_AUTH_TOKEN = 'dummy_token';
 process.env.TWILIO_WHATSAPP_FROM_NUMBER = 'whatsapp:+15555555555';
+process.env.STRIPE_SECRET_KEY = 'sk_test_dummy';
+process.env.STRIPE_WEBHOOK_SECRET = 'whsec_dummy';
 
 // Social Logins
 process.env.GOOGLE_CLIENT_ID = 'dummy_google_id';

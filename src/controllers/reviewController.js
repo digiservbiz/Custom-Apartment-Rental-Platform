@@ -10,24 +10,50 @@ const asyncHandler = require('../middleware/async');
  * @access  Private (Renters who have booked the apartment)
  */
 exports.createReview = asyncHandler(async (req, res, next) => {
-    req.body.renter = req.user.id;
+    // apartment comes from the nested route param
+    const apartmentId = req.params.apartmentId || req.body.apartment;
 
-    // Check if the user has a completed booking for this apartment
+    if (!apartmentId) {
+      return next(new ErrorResponse('Apartment ID is required', 400));
+    }
+
+    // Validate rating
+    const rating = Number(req.body.rating);
+    if (!rating || rating < 1 || rating > 5) {
+      return next(new ErrorResponse('Rating must be a number between 1 and 5', 400));
+    }
+
+    if (!req.body.comment || req.body.comment.trim() === '') {
+      return next(new ErrorResponse('Please add a comment', 400));
+    }
+
+    // Verify renter has a confirmed booking for this apartment
     const booking = await Booking.findOne({
-      apartment: req.body.apartment,
+      apartment: apartmentId,
       renter: req.user.id,
-      status: 'Confirmed', // Or whatever status means a completed stay
+      status: 'Confirmed',
     });
 
     if (!booking) {
-      return next(new ErrorResponse('You can only review apartments you have stayed at.', 401));
+      return next(new ErrorResponse('You can only review apartments you have stayed at.', 403));
     }
 
-    const review = await Review.create(req.body);
+    // Prevent duplicate reviews per booking
+    const existingReview = await Review.findOne({
+      apartment: apartmentId,
+      renter: req.user.id,
+    });
 
-    // Send notification to admin
-    // In a real app, you would have a way to get the admin's email
-    await sendEmail('admin@example.com', 'New Review Submitted', `A new review has been submitted for apartment ${req.body.apartment}.`);
+    if (existingReview) {
+      return next(new ErrorResponse('You have already reviewed this apartment.', 400));
+    }
+
+    const review = await Review.create({
+      apartment: apartmentId,
+      renter: req.user.id,
+      rating,
+      comment: req.body.comment.trim(),
+    });
 
     res.status(201).json({ success: true, data: review });
 });

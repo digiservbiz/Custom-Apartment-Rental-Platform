@@ -15,9 +15,9 @@ describe('Booking Endpoints', () => {
   const testUser = { name: 'Test Renter', email: 'renter@example.com', password: 'password123', role: 'renter' };
   const testApartment = { location: 'Test Beach House', pricePerNight: 100, maxGuests: 4, description: 'A nice house.' };
 
-  // Dates for an existing confirmed booking
-  const existingBookingCheckIn = new Date('2025-07-10');
-  const existingBookingCheckOut = new Date('2025-07-15');
+  // Dates for an existing confirmed booking (far future to stay valid)
+  const existingBookingCheckIn = new Date('2099-07-10');
+  const existingBookingCheckOut = new Date('2099-07-15');
 
   beforeEach(async () => {
     // Create user and apartment before each test
@@ -42,9 +42,8 @@ describe('Booking Endpoints', () => {
   it('should FAIL to create a booking for dates that overlap with an existing confirmed booking', async () => {
     const overlappingBooking = {
       apartment: apartment._id,
-      checkInDate: new Date('2025-07-14'), // Overlaps with July 10-15
-      checkOutDate: new Date('2025-07-20'),
-      totalPrice: 600,
+      checkInDate: new Date('2099-07-14'), // Overlaps with July 10-15
+      checkOutDate: new Date('2099-07-20'),
     };
 
     const res = await request
@@ -60,9 +59,8 @@ describe('Booking Endpoints', () => {
   it('should SUCCEED in creating a booking for dates that do not overlap', async () => {
     const nonOverlappingBooking = {
       apartment: apartment._id,
-      checkInDate: new Date('2025-07-20'), // Does not overlap with July 10-15
-      checkOutDate: new Date('2025-07-25'),
-      totalPrice: 500,
+      checkInDate: new Date('2099-07-20'), // Does not overlap with July 10-15
+      checkOutDate: new Date('2099-07-25'),
     };
 
     const res = await request
@@ -73,5 +71,22 @@ describe('Booking Endpoints', () => {
     expect(res.statusCode).toBe(201);
     expect(res.body.success).toBe(true);
     expect(res.body.data).toHaveProperty('status', 'Pending');
+    expect(res.body.data.totalPrice).toBeGreaterThan(0);
+  });
+
+  it('should FAIL to create a booking with check-out before check-in', async () => {
+    const invalidBooking = {
+      apartment: apartment._id,
+      checkInDate: new Date('2099-07-25'),
+      checkOutDate: new Date('2099-07-20'),
+    };
+
+    const res = await request
+      .post('/api/v1/bookings')
+      .set('Authorization', `Bearer ${token}`)
+      .send(invalidBooking);
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.success).toBe(false);
   });
 });

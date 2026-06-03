@@ -1,7 +1,9 @@
+const crypto = require('crypto');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
+const { sendEmail } = require('../services/emailService');
 
 /**
  * @desc    Register user
@@ -19,7 +21,7 @@ exports.register = asyncHandler(async (req, res, next) => {
       role,
     });
 
-    sendTokenResponse(user, 200, res);
+    sendTokenResponse(user, 201, res);
 });
 
 /**
@@ -160,6 +162,79 @@ exports.updateDetails = asyncHandler(async (req, res, next) => {
  */
 exports.facebookCallback = (req, res, next) => {
   const token = req.user.getSignedJwtToken();
-  // Redirect to a frontend route that will handle the token
   res.redirect(`${process.env.CLIENT_URL}/login-success?token=${token}`);
 };
+
+/**
+ * @desc    Forgot password — sends reset email
+ * @route   POST /api/v1/auth/forgotpassword
+ * @access  Public
+ */
+exports.forgotPassword = asyncHandler(async (req, res, next) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return next(new ErrorResponse('Please provide an email', 400));
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    // Don't reveal whether a user exists
+    return res.status(200).json({ success: true, data: 'If that email exists, a reset link has been sent.' });
+  }
+
+  const resetToken = user.getResetPasswordToken();
+  await user.save({ validateBeforeSave: false });
+
+  const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+
+  const html = `
+    <h2>Password Reset</h2>
+    <p>You requested a password reset. Click the link below (valid for 10 minutes):</p>
+    <a href="${resetUrl}">${resetUrl}</a>
+    <p>If you did not request this, ignore this email.</p>
+  `;
+
+  try {
+    await sendEmail(user.email, 'Password Reset Request', html);
+    res.status(200).json({ success: true, data: 'If that email exists, a reset link has been sent.' });
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+    return next(new ErrorResponse('Email could not be sent', 500));
+  }
+});
+
+/**
+ * @desc    Reset password
+ * @route   PUT /api/v1/auth/resetpassword/:resettoken
+ * @access  Public
+ */
+exports.resetPassword = asyncHandler(async (req, res, next) => {
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.resettoken)
+    .digest('hex');
+
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return next(new ErrorResponse('Invalid or expired reset token', 400));
+  }
+
+  if (!req.body.password || req.body.password.length < 6) {
+    return next(new ErrorResponse('Password must be at least 6 characters', 400));
+  }
+
+  user.password = req.body.password;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+  await user.save();
+
+  sendTokenResponse(user, 200, res);
+});

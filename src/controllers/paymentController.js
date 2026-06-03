@@ -15,19 +15,28 @@ exports.createPaymentIntent = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Booking ID is required', 400));
   }
 
-  // Find the booking to get the total price
   const booking = await Booking.findById(bookingId);
 
   if (!booking) {
     return next(new ErrorResponse(`No booking found with the id of ${bookingId}`, 404));
   }
 
-  // Ensure the user trying to pay is the one who made the booking
   if (booking.renter.toString() !== req.user.id) {
-    return next(new ErrorResponse('Not authorized to pay for this booking', 401));
+    return next(new ErrorResponse('Not authorized to pay for this booking', 403));
   }
 
-  // Initialize Stripe
+  if (booking.status === 'Confirmed') {
+    return next(new ErrorResponse('This booking is already paid', 400));
+  }
+
+  if (booking.status === 'Cancelled') {
+    return next(new ErrorResponse('Cannot pay for a cancelled booking', 400));
+  }
+
+  if (!booking.totalPrice || booking.totalPrice <= 0) {
+    return next(new ErrorResponse('Invalid booking amount', 400));
+  }
+
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
   // Create a PaymentIntent with the order amount and currency

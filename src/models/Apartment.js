@@ -12,10 +12,16 @@ const ApartmentSchema = new mongoose.Schema({
   pricePerNight: {
     type: Number,
     required: [true, 'Please add a price per night'],
+    min: [1, 'Price per night must be at least $1'],
   },
   maxGuests: {
     type: Number,
     required: [true, 'Please add the maximum number of guests'],
+    min: [1, 'Maximum guests must be at least 1'],
+    validate: {
+      validator: Number.isInteger,
+      message: 'Maximum guests must be a whole number',
+    },
   },
   description: {
     type: String,
