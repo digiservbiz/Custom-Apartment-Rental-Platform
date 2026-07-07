@@ -31,6 +31,12 @@ module.exports = {
     publicKey: optional('STRIPE_PUBLIC_KEY', ''),
   },
 
+  cloudinary: {
+    cloudName: optional('CLOUDINARY_CLOUD_NAME', ''),
+    apiKey: optional('CLOUDINARY_API_KEY', ''),
+    apiSecret: optional('CLOUDINARY_API_SECRET', ''),
+  },
+
   sendgrid: {
     apiKey: optional('SENDGRID_API_KEY', ''),
     fromEmail: optional('SENDGRID_FROM_EMAIL', 'noreply@example.com'),

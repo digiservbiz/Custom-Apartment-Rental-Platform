@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
 import Alert from '../components/Alert';
 import Spinner from '../components/Spinner';
+import PhotoUploader from '../components/PhotoUploader';
 
 const EditApartmentPage = () => {
   const { id } = useParams();
@@ -14,6 +15,8 @@ const EditApartmentPage = () => {
     maxGuests: '',
     description: '',
     status: 'Available',
+    latitude: '',
+    longitude: '',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -31,6 +34,8 @@ const EditApartmentPage = () => {
           maxGuests: apt.maxGuests,
           description: apt.description,
           status: apt.status,
+          latitude: apt.latitude ?? '',
+          longitude: apt.longitude ?? '',
         });
       } catch {
         setError('Failed to load apartment details.');
@@ -57,6 +62,8 @@ const EditApartmentPage = () => {
           .filter(Boolean),
         pricePerNight: Number(formData.pricePerNight),
         maxGuests: Number(formData.maxGuests),
+        latitude: formData.latitude === '' ? undefined : Number(formData.latitude),
+        longitude: formData.longitude === '' ? undefined : Number(formData.longitude),
       });
       navigate('/my-apartments');
     } catch (err) {
@@ -85,6 +92,15 @@ const EditApartmentPage = () => {
           />
         </div>
         <div className="form-group mb-3">
+          <label>Upload Photos</label>
+          <PhotoUploader
+            onUploaded={(urls) =>
+              setFormData((prev) => ({
+                ...prev,
+                photos: [prev.photos, urls.join(', ')].filter(Boolean).join(', '),
+              }))
+            }
+          />
           <label htmlFor="photos">Photos (comma-separated URLs)</label>
           <input
             type="text"
@@ -94,6 +110,38 @@ const EditApartmentPage = () => {
             value={formData.photos}
             onChange={onChange}
           />
+        </div>
+        <div className="row">
+          <div className="col-md-6 form-group mb-3">
+            <label htmlFor="latitude">Latitude (optional, for the map)</label>
+            <input
+              type="number"
+              id="latitude"
+              name="latitude"
+              className="form-control"
+              value={formData.latitude}
+              onChange={onChange}
+              step="any"
+              min="-90"
+              max="90"
+              placeholder="e.g. 40.7128"
+            />
+          </div>
+          <div className="col-md-6 form-group mb-3">
+            <label htmlFor="longitude">Longitude (optional, for the map)</label>
+            <input
+              type="number"
+              id="longitude"
+              name="longitude"
+              className="form-control"
+              value={formData.longitude}
+              onChange={onChange}
+              step="any"
+              min="-180"
+              max="180"
+              placeholder="e.g. -74.0060"
+            />
+          </div>
         </div>
         <div className="form-group mb-3">
           <label htmlFor="pricePerNight">Price Per Night ($)</label>

@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import axios from '../api/axios';
 import Spinner from '../components/Spinner';
 import Alert from '../components/Alert';
-import MockMap from '../components/MockMap';
+import ApartmentMap from '../components/ApartmentMap';
 import { useTranslation } from 'react-i18next';
 import AuthContext from '../context/AuthContext';
 
@@ -92,7 +92,11 @@ const ApartmentDetailsPage = () => {
             {availabilityMessage && <Alert type="success" message={availabilityMessage} />}
         </div>
         <div className="col-md-4">
-            <MockMap />
+            <ApartmentMap
+              latitude={apartment.latitude}
+              longitude={apartment.longitude}
+              label={apartment.location}
+            />
         </div>
       </div>
       
