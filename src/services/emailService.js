@@ -1,7 +1,13 @@
 const sgMail = require('@sendgrid/mail');
+const config = require('../config');
 
-// Set the API key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+if (config.sendgrid.apiKey) {
+  sgMail.setApiKey(config.sendgrid.apiKey);
+} else {
+  console.warn('SendGrid API key not configured. Email delivery will fail until it is set.');
+}
+
+const fromEmail = config.sendgrid.fromEmail;
 
 /**
  * Sends a generic email.
@@ -12,7 +18,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const sendEmail = async (to, subject, html) => {
   const msg = {
     to,
-    from: process.env.SENDGRID_FROM_EMAIL,
+    from: fromEmail,
     subject,
     html,
   };
@@ -46,7 +52,7 @@ const sendBookingConfirmation = async (booking) => {
   // Email to the Renter
   const renterMsg = {
     to: renter.email,
-    from: process.env.SENDGRID_FROM_EMAIL,
+    from: fromEmail,
     subject: `Your Booking is Confirmed for ${apartment.location}!`,
     html: `
       <h1>Booking Confirmation</h1>
@@ -65,7 +71,7 @@ const sendBookingConfirmation = async (booking) => {
   // Email to the Owner/Manager
   const ownerMsg = {
     to: owner.email,
-    from: process.env.SENDGRID_FROM_EMAIL,
+    from: fromEmail,
     subject: `New Booking for your apartment at ${apartment.location}`,
     html: `
       <h1>New Booking Notification</h1>

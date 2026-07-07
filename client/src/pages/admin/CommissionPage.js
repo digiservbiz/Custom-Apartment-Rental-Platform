@@ -29,14 +29,7 @@ const CommissionPage = () => {
     setError('');
     setSuccess('');
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      await axios.put('/api/v1/settings/commission_fee', { value: commission }, config);
+      await axios.put('/api/v1/settings/commission_fee', { value: commission });
       setSuccess('Commission fee updated successfully!');
     } catch (err) {
       setError('Failed to update commission fee.');

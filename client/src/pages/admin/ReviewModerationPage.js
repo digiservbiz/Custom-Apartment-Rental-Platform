@@ -1,64 +1,37 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import axios from '../../api/axios';
 import AuthContext from '../../context/AuthContext';
+import useFetch from '../../hooks/useFetch';
 import Spinner from '../../components/Spinner';
 import Alert from '../../components/Alert';
 
 const ReviewModerationPage = () => {
-  const [pendingReviews, setPendingReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const { user: adminUser } = useContext(AuthContext);
+  const {
+    data: reviews,
+    loading,
+    error: fetchError,
+    setData: setReviews,
+  } = useFetch(adminUser ? '/api/v1/reviews' : null, {
+    errorMessage: 'Error fetching reviews for moderation',
+  });
+  const [updateError, setUpdateError] = useState('');
+
+  const pendingReviews = (reviews || []).filter((review) => review.status === 'Pending');
 
   const handleUpdateReviewStatus = async (reviewId, status) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      await axios.put(`/api/v1/reviews/${reviewId}`, { status }, config);
-
+      await axios.put(`/api/v1/reviews/${reviewId}`, { status });
       // Remove the review from the list for instant UI feedback
-      setPendingReviews(pendingReviews.filter(review => review._id !== reviewId));
+      setReviews((prev) => prev.filter((review) => review._id !== reviewId));
     } catch (err) {
-      setError('Failed to update review status.');
+      setUpdateError('Failed to update review status.');
     }
   };
 
-  useEffect(() => {
-    const fetchReviews = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem('token');
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
-        const { data } = await axios.get('/api/v1/reviews', config);
+  if (loading) return <Spinner />;
 
-        // Filter for pending reviews
-        const filteredReviews = data.data.filter(review => review.status === 'Pending');
-
-        setPendingReviews(filteredReviews);
-        setLoading(false);
-      } catch (err) {
-        setError('Error fetching reviews for moderation');
-        setLoading(false);
-      }
-    };
-
-    if (adminUser) {
-      fetchReviews();
-    }
-  }, [adminUser]);
-
-  if (loading) {
-    return <Spinner />;
-  }
+  const error = fetchError || updateError;
 
   return (
     <div>
@@ -80,8 +53,8 @@ const ReviewModerationPage = () => {
           <tbody>
             {pendingReviews.map((review) => (
               <tr key={review._id}>
-                <td>{review.apartment.location}</td>
-                <td>{review.renter.name}</td>
+                <td>{review.apartment?.location}</td>
+                <td>{review.renter?.name}</td>
                 <td>{review.rating}</td>
                 <td>{review.comment}</td>
                 <td>

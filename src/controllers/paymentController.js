@@ -1,7 +1,8 @@
-const Stripe = require('stripe');
+const config = require('../config');
 const asyncHandler = require('../middleware/async');
 const ErrorResponse = require('../utils/errorResponse');
 const Booking = require('../models/Booking');
+const { getStripe } = require('../services/paymentService');
 const { sendBookingConfirmation } = require('../services/emailService');
 const { sendBookingConfirmationMessage } = require('../services/whatsappService');
 
@@ -15,24 +16,31 @@ exports.createPaymentIntent = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse('Booking ID is required', 400));
   }
 
-  // Find the booking to get the total price
   const booking = await Booking.findById(bookingId);
 
   if (!booking) {
     return next(new ErrorResponse(`No booking found with the id of ${bookingId}`, 404));
   }
 
-  // Ensure the user trying to pay is the one who made the booking
   if (booking.renter.toString() !== req.user.id) {
-    return next(new ErrorResponse('Not authorized to pay for this booking', 401));
+    return next(new ErrorResponse('Not authorized to pay for this booking', 403));
   }
 
-  // Initialize Stripe
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  if (booking.status === 'Confirmed') {
+    return next(new ErrorResponse('This booking is already paid', 400));
+  }
+
+  if (booking.status === 'Cancelled') {
+    return next(new ErrorResponse('Cannot pay for a cancelled booking', 400));
+  }
+
+  if (!booking.totalPrice || booking.totalPrice <= 0) {
+    return next(new ErrorResponse('Invalid booking amount', 400));
+  }
 
   // Create a PaymentIntent with the order amount and currency
-  const paymentIntent = await stripe.paymentIntents.create({
-    amount: booking.totalPrice * 100, // Amount in cents
+  const paymentIntent = await getStripe().paymentIntents.create({
+    amount: Math.round(booking.totalPrice * 100), // Amount in cents
     currency: 'usd',
     automatic_payment_methods: {
       enabled: true,
@@ -52,14 +60,12 @@ exports.createPaymentIntent = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/payments/stripe-webhook
 // @access  Public
 exports.stripeWebhook = asyncHandler(async (req, res, next) => {
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const signature = req.headers['stripe-signature'];
-  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(req.body, signature, endpointSecret);
+    event = getStripe().webhooks.constructEvent(req.body, signature, config.stripe.webhookSecret);
   } catch (err) {
     console.log(`Error: ${err.message}`);
     return res.status(400).send(`Webhook Error: ${err.message}`);

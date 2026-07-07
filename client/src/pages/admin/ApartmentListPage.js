@@ -1,45 +1,20 @@
-import React, { useState, useEffect, useContext } from 'react';
-import axios from '../../api/axios';
+import React, { useContext } from 'react';
+import { Link } from 'react-router-dom';
 import AuthContext from '../../context/AuthContext';
+import useFetch from '../../hooks/useFetch';
 import Spinner from '../../components/Spinner';
 import Alert from '../../components/Alert';
+import StatusBadge from '../../components/StatusBadge';
 
 const ApartmentListPage = () => {
-  const [apartments, setApartments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const { user: adminUser } = useContext(AuthContext);
+  const { data: apartments, loading, error } = useFetch(
+    adminUser && adminUser.role === 'admin' ? '/api/v1/apartments' : null,
+    { errorMessage: 'Error fetching apartments' }
+  );
 
-  useEffect(() => {
-    const fetchApartments = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
-        const { data } = await axios.get('/api/v1/apartments', config);
-        setApartments(data.data);
-        setLoading(false);
-      } catch (err) {
-        setError('Error fetching apartments');
-        setLoading(false);
-      }
-    };
-
-    if (adminUser && adminUser.role === 'admin') {
-      fetchApartments();
-    }
-  }, [adminUser]);
-
-  if (loading) {
-    return <Spinner />;
-  }
-
-  if (error) {
-    return <Alert type="danger" message={error} />;
-  }
+  if (loading) return <Spinner />;
+  if (error) return <Alert type="danger" message={error} />;
 
   return (
     <div>
@@ -47,7 +22,6 @@ const ApartmentListPage = () => {
       <table className="table table-striped">
         <thead>
           <tr>
-            <th>ID</th>
             <th>Location</th>
             <th>Price</th>
             <th>Status</th>
@@ -55,15 +29,19 @@ const ApartmentListPage = () => {
           </tr>
         </thead>
         <tbody>
-          {apartments.map((apartment) => (
+          {(apartments || []).map((apartment) => (
             <tr key={apartment._id}>
-              <td>{apartment._id}</td>
-              <td>{apartment.location}</td>
-              <td>${apartment.pricePerNight}</td>
-              <td>{apartment.status}</td>
               <td>
-                <button className="btn btn-primary btn-sm">Edit</button>
-                <button className="btn btn-danger btn-sm ms-2">Delete</button>
+                <Link to={`/apartments/${apartment._id}`}>{apartment.location}</Link>
+              </td>
+              <td>${apartment.pricePerNight}</td>
+              <td>
+                <StatusBadge status={apartment.status} />
+              </td>
+              <td>
+                <Link to={`/apartments/${apartment._id}/edit`} className="btn btn-sm btn-outline-primary">
+                  Edit
+                </Link>
               </td>
             </tr>
           ))}

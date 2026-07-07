@@ -1,34 +1,35 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const passport = require('passport');
-const connectDB = require('./config/db');
-
-// Load env vars
-dotenv.config();
-
-// Connect to database if not in test environment
-if (process.env.NODE_ENV !== 'test') {
-  connectDB();
-}
+const rateLimit = require('express-rate-limit');
+const config = require('./config');
 
 const { stripeWebhook } = require('./controllers/paymentController');
+const errorHandler = require('./middleware/error');
 
 const app = express();
 
-// Stripe webhook
-// Note: This route must be defined before express.json() to ensure we get the raw request body.
+// Stripe webhook must be before body parser to get raw body
 app.post(
   '/api/v1/payments/stripe-webhook',
   express.raw({ type: 'application/json' }),
   stripeWebhook
 );
 
-// Body parser
-app.use(express.json());
+// Body parser with size limit
+app.use(express.json({ limit: '10kb' }));
 
 // Enable CORS
-app.use(cors());
+app.use(cors({ origin: [config.clientUrl], credentials: true }));
+
+// Rate limiting for auth endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  message: { success: false, error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Passport Config
 require('./config/passport')(passport);
@@ -36,33 +37,23 @@ require('./config/passport')(passport);
 // Passport Middleware
 app.use(passport.initialize());
 
-// Mount routers
-const auth = require('./routes/auth');
-const apartments = require('./routes/apartments');
-const whatsapp = require('./routes/whatsapp');
-const bookings = require('./routes/bookings');
-const reviews = require('./routes/reviews');
-const users = require('./routes/users');
-const payments = require('./routes/payments');
-const settings = require('./routes/settings');
-
-app.use('/api/v1/auth', auth);
-app.use('/api/v1/apartments', apartments);
-app.use('/api/v1/whatsapp', whatsapp);
-app.use('/api/v1/bookings', bookings);
-app.use('/api/v1/reviews', reviews);
-app.use('/api/v1/users', users);
-app.use('/api/v1/payments', payments);
-app.use('/api/v1/settings', settings);
-
-const errorHandler = require('./middleware/error');
-app.use(errorHandler);
-
-// Define a simple route
+// Health check
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-const PORT = process.env.PORT || 5000;
+// Mount routers
+app.use('/api/v1/auth', authLimiter, require('./routes/auth'));
+app.use('/api/v1/apartments', require('./routes/apartments'));
+app.use('/api/v1/whatsapp', require('./routes/whatsapp'));
+app.use('/api/v1/bookings', require('./routes/bookings'));
+app.use('/api/v1/reviews', require('./routes/reviews'));
+app.use('/api/v1/users', require('./routes/users'));
+app.use('/api/v1/payments', require('./routes/payments'));
+app.use('/api/v1/settings', require('./routes/settings'));
+app.use('/api/v1/admin', require('./routes/admin'));
+
+// Error handler must be mounted after all routes
+app.use(errorHandler);
 
 module.exports = app;

@@ -62,5 +62,15 @@
   "sort_by": "Sort by",
   "newest": "Newest",
   "price_asc": "Price: Low to High",
-  "price_desc": "Price: High to Low"
+  "price_desc": "Price: High to Low",
+  "forgot_password": "Forgot Password?",
+  "send_reset_link": "Send Reset Link",
+  "reset_password": "Reset Password",
+  "my_profile": "My Profile",
+  "owner_bookings": "Bookings Received",
+  "no_apartments_found": "No apartments found matching your search.",
+  "clear_filters": "Clear filters",
+  "nights": "night(s)",
+  "estimated_total": "Estimated total",
+  "platform_commission": "Price includes platform commission"
 }

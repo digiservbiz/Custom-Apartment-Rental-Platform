@@ -17,7 +17,7 @@ describe('Auth Endpoints', () => {
         .post('/api/v1/auth/register')
         .send(testUser);
 
-      expect(res.statusCode).toBe(200);
+      expect(res.statusCode).toBe(201);
       expect(res.body.success).toBe(true);
       expect(res.body).toHaveProperty('token');
 

@@ -14,9 +14,9 @@ const LanguageSwitcher = () => {
         {i18n.language.toUpperCase()}
       </button>
       <ul className="dropdown-menu">
-        <li><a className="dropdown-item" href="#" onClick={() => changeLanguage('en')}>English</a></li>
-        <li><a className="dropdown-item" href="#" onClick={() => changeLanguage('es')}>Español</a></li>
-        <li><a className="dropdown-item" href="#" onClick={() => changeLanguage('fr')}>Français</a></li>
+        <li><button type="button" className="dropdown-item" onClick={() => changeLanguage('en')}>English</button></li>
+        <li><button type="button" className="dropdown-item" onClick={() => changeLanguage('es')}>Español</button></li>
+        <li><button type="button" className="dropdown-item" onClick={() => changeLanguage('fr')}>Français</button></li>
       </ul>
     </div>
   );

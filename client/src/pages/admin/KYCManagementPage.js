@@ -1,64 +1,38 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import axios from '../../api/axios';
 import AuthContext from '../../context/AuthContext';
+import useFetch from '../../hooks/useFetch';
 import Spinner from '../../components/Spinner';
 import Alert from '../../components/Alert';
 
 const KYCManagementPage = () => {
-  const [pendingUsers, setPendingUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const { user: adminUser } = useContext(AuthContext);
+  const {
+    data: users,
+    loading,
+    error: fetchError,
+    setData: setUsers,
+  } = useFetch(adminUser ? '/api/v1/users' : null, {
+    errorMessage: 'Error fetching users for KYC approval',
+  });
+  const [updateError, setUpdateError] = useState('');
+
+  const pendingUsers = (users || []).filter(
+    (user) => (user.role === 'owner' || user.role === 'agent') && user.kycStatus === 'pending'
+  );
 
   const handleUpdateKycStatus = async (userId, status) => {
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      await axios.put(`/api/v1/users/${userId}/updatestatus`, { kycStatus: status }, config);
-
-      setPendingUsers(pendingUsers.filter(user => user._id !== userId));
+      await axios.put(`/api/v1/users/${userId}/updatestatus`, { kycStatus: status });
+      setUsers((prev) => prev.filter((user) => user._id !== userId));
     } catch (err) {
-      setError('Failed to update KYC status.');
+      setUpdateError('Failed to update KYC status.');
     }
   };
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-      try {
-        const token = localStorage.getItem('token');
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
-        const { data } = await axios.get('/api/v1/users', config);
+  if (loading) return <Spinner />;
 
-        const filteredUsers = data.data.filter(user =>
-          (user.role === 'owner' || user.role === 'agent') && user.kycStatus === 'pending'
-        );
-
-        setPendingUsers(filteredUsers);
-        setLoading(false);
-      } catch (err) {
-        setError('Error fetching users for KYC approval');
-        setLoading(false);
-      }
-    };
-
-    if (adminUser) {
-      fetchUsers();
-    }
-  }, [adminUser]);
-
-  if (loading) {
-    return <Spinner />;
-  }
+  const error = fetchError || updateError;
 
   return (
     <div>

@@ -12,7 +12,6 @@ const ApartmentListPage = () => {
   const [keyword, setKeyword] = useState('');
   const [price, setPrice] = useState({ min: '', max: '' });
   const [guests, setGuests] = useState('');
-  const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({});
   const { t } = useTranslation();
 
@@ -27,7 +26,6 @@ const ApartmentListPage = () => {
       const { data } = await axios.get(url);
       setApartments(data.data);
       setPagination(data.pagination);
-      setPage(pageNumber);
       setLoading(false);
     } catch (err) {
       setError('Error fetching apartments');
@@ -37,6 +35,7 @@ const ApartmentListPage = () => {
 
   useEffect(() => {
     fetchApartments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch once on mount; later fetches are user-triggered
   }, []);
 
   const submitHandler = (e) => {
@@ -100,8 +99,15 @@ const ApartmentListPage = () => {
       ) : (
         <>
             <div className="row">
-            {apartments.map((apartment) => (
-                <div className="col-md-4" key={apartment._id}>
+            {apartments.length === 0 ? (
+              <div className="col-12 text-center py-5 text-muted">
+                <p className="fs-5">No apartments found matching your search.</p>
+                <button className="btn btn-outline-secondary" onClick={() => { setKeyword(''); setPrice({ min: '', max: '' }); setGuests(''); fetchApartments(); }}>
+                  Clear filters
+                </button>
+              </div>
+            ) : apartments.map((apartment) => (
+                <div className="col-md-4 mb-4" key={apartment._id}>
                 <ApartmentCard apartment={apartment} />
                 </div>
             ))}

@@ -1,81 +1,100 @@
-import React, { useState, useEffect, useContext } from 'react';
-import axios from '../api/axios';
+import React, { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
+import axios from '../api/axios';
 import AuthContext from '../context/AuthContext';
+import useFetch from '../hooks/useFetch';
 import Spinner from '../components/Spinner';
 import Alert from '../components/Alert';
+import StatusBadge from '../components/StatusBadge';
 
 const MyApartmentsPage = () => {
-  const [apartments, setApartments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const { user } = useContext(AuthContext);
+  const {
+    data: apartments,
+    loading,
+    error,
+    setData: setApartments,
+  } = useFetch(user ? '/api/v1/apartments/myapartments' : null, {
+    errorMessage: 'Failed to load your apartments.',
+  });
+  const [deleteError, setDeleteError] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
 
-  useEffect(() => {
-    const fetchMyApartments = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const config = {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        };
-        const { data } = await axios.get('/api/v1/apartments/myapartments', config);
-        setApartments(data.data);
-        setLoading(false);
-      } catch (err) {
-        setError('Error fetching my apartments');
-        setLoading(false);
-      }
-    };
-
-    if (user) {
-        fetchMyApartments();
-    } else {
-        setLoading(false);
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this apartment? This cannot be undone.')) return;
+    setDeletingId(id);
+    try {
+      await axios.delete(`/api/v1/apartments/${id}`);
+      setApartments((prev) => prev.filter((a) => a._id !== id));
+    } catch (err) {
+      setDeleteError(err.response?.data?.error || 'Failed to delete apartment.');
+    } finally {
+      setDeletingId(null);
     }
-  }, [user]);
+  };
 
-  if (loading) {
-    return <Spinner />;
-  }
+  if (loading) return <Spinner />;
 
-  if (error) {
-    return <Alert type="danger" message={error} />;
-  }
+  const list = apartments || [];
 
   return (
     <div>
-      <h1>My Apartments</h1>
-      <Link to="/create-apartment" className="btn btn-primary mb-3">
-        Create New Apartment
-      </Link>
-      {apartments.length === 0 ? (
-        <p>You have no apartments.</p>
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h1>My Apartments</h1>
+        <Link to="/create-apartment" className="btn btn-primary">
+          + New Apartment
+        </Link>
+      </div>
+
+      {(error || deleteError) && <Alert type="danger" message={error || deleteError} />}
+
+      {list.length === 0 ? (
+        <div className="text-center py-5 text-muted">
+          <p>You have no apartments listed yet.</p>
+          <Link to="/create-apartment" className="btn btn-outline-primary">
+            Create Your First Listing
+          </Link>
+        </div>
       ) : (
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>Location</th>
-              <th>Price</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {apartments.map((apartment) => (
-              <tr key={apartment._id}>
-                <td>{apartment.location}</td>
-                <td>${apartment.pricePerNight}</td>
-                <td>{apartment.status}</td>
-                <td>
-                  <Link to={`/apartments/${apartment._id}/edit`} className="btn btn-primary btn-sm">Edit</Link>
-                  <button className="btn btn-danger btn-sm ms-2">Delete</button>
-                </td>
+        <div className="table-responsive">
+          <table className="table table-striped align-middle">
+            <thead>
+              <tr>
+                <th>Location</th>
+                <th>Price / night</th>
+                <th>Max Guests</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {list.map((apt) => (
+                <tr key={apt._id}>
+                  <td>
+                    <Link to={`/apartments/${apt._id}`}>{apt.location}</Link>
+                  </td>
+                  <td>${apt.pricePerNight}</td>
+                  <td>{apt.maxGuests}</td>
+                  <td>
+                    <StatusBadge status={apt.status} />
+                  </td>
+                  <td>
+                    <Link to={`/apartments/${apt._id}/edit`} className="btn btn-sm btn-outline-primary me-2">
+                      Edit
+                    </Link>
+                    <button
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => handleDelete(apt._id)}
+                      disabled={deletingId === apt._id}
+                    >
+                      {deletingId === apt._id ? 'Deleting…' : 'Delete'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

@@ -1,10 +1,21 @@
 const twilio = require('twilio');
+const config = require('../config');
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const fromNumber = process.env.TWILIO_WHATSAPP_FROM_NUMBER;
+const fromNumber = config.twilio.whatsappFrom;
 
-const client = twilio(accountSid, authToken);
+// Lazily create the Twilio client so a missing/invalid TWILIO_ACCOUNT_SID
+// degrades WhatsApp notifications instead of crashing the app at startup.
+let client = null;
+const getClient = () => {
+  if (client) return client;
+  const { accountSid, authToken } = config.twilio;
+  if (!accountSid || !authToken) {
+    console.warn('Twilio credentials not configured. WhatsApp notifications are disabled.');
+    return null;
+  }
+  client = twilio(accountSid, authToken);
+  return client;
+};
 
 /**
  * Sends a booking confirmation message via WhatsApp to the renter and the owner.
@@ -49,8 +60,11 @@ const sendBookingConfirmationMessage = async (booking) => {
     return;
   }
 
+  const twilioClient = getClient();
+  if (!twilioClient) return;
+
   try {
-    await Promise.all(messagesToSend.map(message => client.messages.create(message)));
+    await Promise.all(messagesToSend.map(message => twilioClient.messages.create(message)));
     console.log('Booking confirmation WhatsApp messages sent successfully.');
   } catch (error) {
     console.error('Error sending booking confirmation WhatsApp messages:', error);
@@ -58,8 +72,11 @@ const sendBookingConfirmationMessage = async (booking) => {
 };
 
 const sendAvailabilityCheck = async (phoneNumber, message) => {
+  const twilioClient = getClient();
+  if (!twilioClient) return;
+
   try {
-    await client.messages.create({
+    await twilioClient.messages.create({
       body: message,
       from: fromNumber,
       to: `whatsapp:${phoneNumber}`,
