@@ -1,7 +1,9 @@
 const Apartment = require('../models/Apartment');
-const User = require('../models/User');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
+const { isOwnerOrAdmin } = require('../utils/ownership');
+const { getPagination } = require('../utils/pagination');
+const { sendAvailabilityCheck } = require('../services/whatsappService');
 
 /**
  * @desc    Get all apartments
@@ -35,27 +37,24 @@ exports.getApartments = asyncHandler(async (req, res, next) => {
     }
 
     // Pagination
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
-    const startIndex = (page - 1) * limit;
-    const endIndex = page * limit;
+    const { page, limit, skip } = getPagination(req.query, { defaultLimit: 10 });
     const total = await Apartment.countDocuments(JSON.parse(queryStr));
 
-    query = query.skip(startIndex).limit(limit);
+    query = query.skip(skip).limit(limit);
 
     const apartments = await query.populate('manager', 'name email');
 
     // Pagination result
     const pagination = {};
 
-    if (endIndex < total) {
+    if (page * limit < total) {
         pagination.next = {
             page: page + 1,
             limit,
         };
     }
 
-    if (startIndex > 0) {
+    if (skip > 0) {
         pagination.prev = {
             page: page - 1,
             limit,
@@ -104,8 +103,8 @@ exports.updateApartment = asyncHandler(async (req, res, next) => {
     }
 
     // Make sure user is the apartment manager
-    if (apartment.manager.toString() !== req.user.id && req.user.role !== 'admin') {
-        return next(new ErrorResponse(`User ${req.user.id} is not authorized to update this apartment`, 401));
+    if (!isOwnerOrAdmin(apartment.manager, req.user)) {
+        return next(new ErrorResponse(`User ${req.user.id} is not authorized to update this apartment`, 403));
     }
 
     apartment = await Apartment.findByIdAndUpdate(req.params.id, req.body, {
@@ -129,8 +128,8 @@ exports.deleteApartment = asyncHandler(async (req, res, next) => {
     }
 
     // Make sure user is the apartment manager
-    if (apartment.manager.toString() !== req.user.id && req.user.role !== 'admin') {
-        return next(new ErrorResponse(`User ${req.user.id} is not authorized to delete this apartment`, 401));
+    if (!isOwnerOrAdmin(apartment.manager, req.user)) {
+        return next(new ErrorResponse(`User ${req.user.id} is not authorized to delete this apartment`, 403));
     }
 
     await apartment.deleteOne();
@@ -156,8 +155,6 @@ exports.checkAvailability = asyncHandler(async (req, res, next) => {
 
     const message = `A renter is interested in your apartment ${apartment.location} (ID: ${apartment._id}). Is it available? Please reply with 'Yes ${apartment._id}' or 'No ${apartment._id}'.`;
 
-    // Use the WhatsApp service to send the check
-    const { sendAvailabilityCheck } = require('../services/whatsappService');
     await sendAvailabilityCheck(apartment.manager.phoneNumber, message);
 
     apartment.status = 'Pending Confirmation';

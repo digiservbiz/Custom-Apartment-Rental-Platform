@@ -46,14 +46,7 @@ const ProfilePage = () => {
     setDetailsError('');
     setDetailsSuccess('');
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      await axios.put('/api/v1/auth/updatedetails', { name, email }, config);
+      await axios.put('/api/v1/auth/updatedetails', { name, email });
       setDetailsSuccess('Profile updated successfully! The changes will be reflected on your next login.');
       setDetailsLoading(false);
     } catch (err) {
@@ -75,17 +68,10 @@ const ProfilePage = () => {
     }
 
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      };
       await axios.put('/api/v1/auth/updatepassword', {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword
-      }, config);
+      });
       setPasswordSuccess('Password changed successfully!');
       setPasswordLoading(false);
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });

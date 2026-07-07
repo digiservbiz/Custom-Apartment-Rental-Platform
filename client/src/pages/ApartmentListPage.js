@@ -12,7 +12,6 @@ const ApartmentListPage = () => {
   const [keyword, setKeyword] = useState('');
   const [price, setPrice] = useState({ min: '', max: '' });
   const [guests, setGuests] = useState('');
-  const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({});
   const { t } = useTranslation();
 
@@ -27,7 +26,6 @@ const ApartmentListPage = () => {
       const { data } = await axios.get(url);
       setApartments(data.data);
       setPagination(data.pagination);
-      setPage(pageNumber);
       setLoading(false);
     } catch (err) {
       setError('Error fetching apartments');
@@ -37,6 +35,7 @@ const ApartmentListPage = () => {
 
   useEffect(() => {
     fetchApartments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetch once on mount; later fetches are user-triggered
   }, []);
 
   const submitHandler = (e) => {

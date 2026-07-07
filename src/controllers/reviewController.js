@@ -109,7 +109,7 @@ exports.updateReview = asyncHandler(async (req, res, next) => {
 
     // Only admin can update the status
     if (req.user.role !== 'admin') {
-        return next(new ErrorResponse('Not authorized to update this review', 401));
+        return next(new ErrorResponse('Not authorized to update this review', 403));
     }
 
     review = await Review.findByIdAndUpdate(req.params.id, req.body, {
@@ -139,7 +139,7 @@ exports.deleteReview = asyncHandler(async (req, res, next) => {
 
     // Only admin can delete
     if (req.user.role !== 'admin') {
-        return next(new ErrorResponse('Not authorized to delete this review', 401));
+        return next(new ErrorResponse('Not authorized to delete this review', 403));
     }
 
     await review.deleteOne();

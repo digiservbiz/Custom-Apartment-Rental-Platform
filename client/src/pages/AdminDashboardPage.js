@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import axios from '../api/axios';
+import useFetch from '../hooks/useFetch';
 import Spinner from '../components/Spinner';
 import Alert from '../components/Alert';
 
@@ -17,17 +17,9 @@ const StatCard = ({ title, value, sub, color }) => (
 );
 
 const AdminDashboardPage = () => {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    axios
-      .get('/api/v1/admin/stats')
-      .then(({ data }) => setStats(data.data))
-      .catch(() => setError('Failed to load statistics.'))
-      .finally(() => setLoading(false));
-  }, []);
+  const { data: stats, loading, error } = useFetch('/api/v1/admin/stats', {
+    errorMessage: 'Failed to load statistics.',
+  });
 
   if (loading) return <Spinner />;
 

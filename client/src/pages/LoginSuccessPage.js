@@ -6,7 +6,7 @@ import Spinner from '../components/Spinner';
 const LoginSuccessPage = () => {
   const { search } = useLocation();
   const navigate = useNavigate();
-  const { socialLoginCallback, loading } = useContext(AuthContext);
+  const { socialLoginCallback } = useContext(AuthContext);
 
   useEffect(() => {
     const handleLogin = async () => {

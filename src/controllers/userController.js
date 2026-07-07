@@ -2,6 +2,7 @@ const User = require('../models/User');
 const { sendEmail } = require('../services/emailService');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
+const { getPagination } = require('../utils/pagination');
 
 /**
  * @desc    Get all users
@@ -9,9 +10,7 @@ const asyncHandler = require('../middleware/async');
  * @access  Private (Admin)
  */
 exports.getUsers = asyncHandler(async (req, res, next) => {
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 20;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = getPagination(req.query);
 
     const safeFields = 'name email phoneNumber role kycStatus createdAt';
     const total = await User.countDocuments();

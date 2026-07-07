@@ -1,6 +1,6 @@
 const crypto = require('crypto');
+const config = require('../config');
 const User = require('../models/User');
-const jwt = require('jsonwebtoken');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const { sendEmail } = require('../services/emailService');
@@ -78,12 +78,12 @@ const sendTokenResponse = (user, statusCode, res) => {
 
   const options = {
     expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000
+      Date.now() + config.jwt.cookieExpire * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
   };
 
-  if (process.env.NODE_ENV === 'production') {
+  if (config.env === 'production') {
     options.secure = true;
   }
 
@@ -104,7 +104,7 @@ const sendTokenResponse = (user, statusCode, res) => {
 exports.googleCallback = (req, res, next) => {
   const token = req.user.getSignedJwtToken();
   // Redirect to a frontend route that will handle the token
-  res.redirect(`${process.env.CLIENT_URL}/login-success?token=${token}`);
+  res.redirect(`${config.clientUrl}/login-success?token=${token}`);
 };
 
 /**
@@ -162,7 +162,7 @@ exports.updateDetails = asyncHandler(async (req, res, next) => {
  */
 exports.facebookCallback = (req, res, next) => {
   const token = req.user.getSignedJwtToken();
-  res.redirect(`${process.env.CLIENT_URL}/login-success?token=${token}`);
+  res.redirect(`${config.clientUrl}/login-success?token=${token}`);
 };
 
 /**
@@ -187,7 +187,7 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
   const resetToken = user.getResetPasswordToken();
   await user.save({ validateBeforeSave: false });
 
-  const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+  const resetUrl = `${config.clientUrl}/reset-password/${resetToken}`;
 
   const html = `
     <h2>Password Reset</h2>

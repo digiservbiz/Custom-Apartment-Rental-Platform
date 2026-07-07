@@ -17,8 +17,6 @@ import AdminDashboardPage from './pages/AdminDashboardPage';
 import AdminRoute from './components/AdminRoute';
 import UserListPage from './pages/admin/UserListPage';
 import AdminApartmentListPage from './pages/admin/ApartmentListPage';
-import AdminReviewListPage from './pages/admin/ReviewListPage';
-import AdminKYCListPage from './pages/admin/KYCListPage';
 import KYCManagementPage from './pages/admin/KYCManagementPage';
 import ReviewModerationPage from './pages/admin/ReviewModerationPage';
 import CommissionPage from './pages/admin/CommissionPage';
@@ -112,8 +110,9 @@ function App() {
             <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
             <Route path="/admin/users" element={<AdminRoute><UserListPage /></AdminRoute>} />
             <Route path="/admin/apartments" element={<AdminRoute><AdminApartmentListPage /></AdminRoute>} />
-            <Route path="/admin/reviews" element={<AdminRoute><AdminReviewListPage /></AdminRoute>} />
-            <Route path="/admin/kyc" element={<AdminRoute><AdminKYCListPage /></AdminRoute>} />
+            {/* Old paths alias the canonical moderation pages */}
+            <Route path="/admin/reviews" element={<AdminRoute><ReviewModerationPage /></AdminRoute>} />
+            <Route path="/admin/kyc" element={<AdminRoute><KYCManagementPage /></AdminRoute>} />
             <Route path="/admin/kyc-management" element={<AdminRoute><KYCManagementPage /></AdminRoute>} />
             <Route path="/admin/review-moderation" element={<AdminRoute><ReviewModerationPage /></AdminRoute>} />
             <Route path="/admin/commission" element={<AdminRoute><CommissionPage /></AdminRoute>} />

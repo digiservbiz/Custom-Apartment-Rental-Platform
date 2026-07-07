@@ -28,15 +28,7 @@ const CreateApartmentPage = () => {
         description
     }
     try {
-        const token = localStorage.getItem('token');
-        const config = {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        }
-        const body = JSON.stringify(newApartment);
-        await axios.post('/api/v1/apartments', body, config);
+        await axios.post('/api/v1/apartments', newApartment);
         setSuccess('Apartment created successfully!');
         setError('');
         setFormData({

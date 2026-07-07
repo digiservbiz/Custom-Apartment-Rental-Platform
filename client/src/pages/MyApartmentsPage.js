@@ -1,28 +1,24 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import axios from '../api/axios';
 import AuthContext from '../context/AuthContext';
+import useFetch from '../hooks/useFetch';
 import Spinner from '../components/Spinner';
 import Alert from '../components/Alert';
+import StatusBadge from '../components/StatusBadge';
 
 const MyApartmentsPage = () => {
-  const [apartments, setApartments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [deletingId, setDeletingId] = useState(null);
   const { user } = useContext(AuthContext);
-
-  useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-    axios
-      .get('/api/v1/apartments/myapartments')
-      .then(({ data }) => setApartments(data.data))
-      .catch(() => setError('Failed to load your apartments.'))
-      .finally(() => setLoading(false));
-  }, [user]);
+  const {
+    data: apartments,
+    loading,
+    error,
+    setData: setApartments,
+  } = useFetch(user ? '/api/v1/apartments/myapartments' : null, {
+    errorMessage: 'Failed to load your apartments.',
+  });
+  const [deleteError, setDeleteError] = useState('');
+  const [deletingId, setDeletingId] = useState(null);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this apartment? This cannot be undone.')) return;
@@ -31,13 +27,15 @@ const MyApartmentsPage = () => {
       await axios.delete(`/api/v1/apartments/${id}`);
       setApartments((prev) => prev.filter((a) => a._id !== id));
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to delete apartment.');
+      setDeleteError(err.response?.data?.error || 'Failed to delete apartment.');
     } finally {
       setDeletingId(null);
     }
   };
 
   if (loading) return <Spinner />;
+
+  const list = apartments || [];
 
   return (
     <div>
@@ -48,9 +46,9 @@ const MyApartmentsPage = () => {
         </Link>
       </div>
 
-      {error && <Alert type="danger" message={error} />}
+      {(error || deleteError) && <Alert type="danger" message={error || deleteError} />}
 
-      {apartments.length === 0 ? (
+      {list.length === 0 ? (
         <div className="text-center py-5 text-muted">
           <p>You have no apartments listed yet.</p>
           <Link to="/create-apartment" className="btn btn-outline-primary">
@@ -70,7 +68,7 @@ const MyApartmentsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {apartments.map((apt) => (
+              {list.map((apt) => (
                 <tr key={apt._id}>
                   <td>
                     <Link to={`/apartments/${apt._id}`}>{apt.location}</Link>
@@ -78,9 +76,7 @@ const MyApartmentsPage = () => {
                   <td>${apt.pricePerNight}</td>
                   <td>{apt.maxGuests}</td>
                   <td>
-                    <span className={`badge bg-${apt.status === 'Available' ? 'success' : 'secondary'}`}>
-                      {apt.status}
-                    </span>
+                    <StatusBadge status={apt.status} />
                   </td>
                   <td>
                     <Link to={`/apartments/${apt._id}/edit`} className="btn btn-sm btn-outline-primary me-2">

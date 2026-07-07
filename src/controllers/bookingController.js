@@ -3,6 +3,8 @@ const Apartment = require('../models/Apartment');
 const Setting = require('../models/Setting');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
+const { isOwnerOrAdmin } = require('../utils/ownership');
+const { getPagination } = require('../utils/pagination');
 
 /**
  * @desc    Create new booking
@@ -75,9 +77,7 @@ exports.createBooking = asyncHandler(async (req, res, next) => {
  * @access  Private (Admin)
  */
 exports.getBookings = asyncHandler(async (req, res, next) => {
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 20;
-    const skip = (page - 1) * limit;
+    const { page, limit, skip } = getPagination(req.query);
 
     const total = await Booking.countDocuments();
     const bookings = await Booking.find()
@@ -108,7 +108,6 @@ exports.getMyBookings = asyncHandler(async (req, res, next) => {
  * @access  Private (Owners, Agents)
  */
 exports.getOwnerBookings = asyncHandler(async (req, res, next) => {
-    const Apartment = require('../models/Apartment');
     const myApartments = await Apartment.find({ manager: req.user.id }).select('_id');
     const apartmentIds = myApartments.map((a) => a._id);
 
@@ -132,8 +131,8 @@ exports.getBooking = asyncHandler(async (req, res, next) => {
     }
 
     // Make sure user is the renter or an admin
-    if (booking.renter.toString() !== req.user.id && req.user.role !== 'admin') {
-        return next(new ErrorResponse(`User ${req.user.id} is not authorized to view this booking`, 401));
+    if (!isOwnerOrAdmin(booking.renter, req.user)) {
+        return next(new ErrorResponse(`User ${req.user.id} is not authorized to view this booking`, 403));
     }
 
     res.status(200).json({ success: true, data: booking });

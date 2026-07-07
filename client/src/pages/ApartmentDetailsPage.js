@@ -19,13 +19,7 @@ const ApartmentDetailsPage = () => {
 
   const handleCheckAvailability = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      const { data } = await axios.post(`/api/v1/apartments/${id}/check-availability`, {}, config);
+      const { data } = await axios.post(`/api/v1/apartments/${id}/check-availability`, {});
       setAvailabilityMessage(data.data);
     } catch (err) {
       setError(err.response?.data?.error || 'Server Error');
@@ -65,7 +59,7 @@ const ApartmentDetailsPage = () => {
         <div className="carousel-inner">
           {apartment.photos.map((photo, index) => (
             <div className={`carousel-item ${index === 0 ? 'active' : ''}`} key={index}>
-              <img src={photo} className="d-block w-100" alt={`Photo ${index + 1}`} />
+              <img src={photo} className="d-block w-100" alt={`Apartment view ${index + 1}`} />
             </div>
           ))}
         </div>

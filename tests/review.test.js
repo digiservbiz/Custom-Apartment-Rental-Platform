@@ -74,7 +74,8 @@ describe('Review Endpoints', () => {
             .set('Authorization', `Bearer ${otherToken}`)
             .send(reviewData);
 
-        expect(res.statusCode).toBe(401);
+        // 403 Forbidden: authenticated but not allowed to review an unbooked apartment
+        expect(res.statusCode).toBe(403);
     });
   });
 

@@ -1,6 +1,6 @@
 // Pin MongoDB version compatible with Ubuntu 24.04 for mongodb-memory-server
 process.env.MONGOMS_VERSION = '7.0.14';
-process.env.MONGOMS_DISTRO = 'ubuntu2204';
+process.env.MONGOMS_DISTRO = 'ubuntu-22.04';
 
 // Set dummy env vars for tests to prevent errors during initialization
 process.env.JWT_SECRET = 'test_secret';

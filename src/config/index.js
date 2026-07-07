@@ -1,3 +1,7 @@
+// Load .env before reading any values so this module is safe to require
+// from anywhere, in any order.
+require('dotenv').config();
+
 const required = (name) => {
   const value = process.env[name];
   if (!value) throw new Error(`Missing required environment variable: ${name}`);

@@ -1,19 +1,11 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const passport = require('passport');
 const rateLimit = require('express-rate-limit');
-const connectDB = require('./config/db');
-
-// Load env vars
-dotenv.config();
-
-// Connect to database if not in test environment
-if (process.env.NODE_ENV !== 'test') {
-  connectDB();
-}
+const config = require('./config');
 
 const { stripeWebhook } = require('./controllers/paymentController');
+const errorHandler = require('./middleware/error');
 
 const app = express();
 
@@ -28,11 +20,7 @@ app.post(
 app.use(express.json({ limit: '10kb' }));
 
 // Enable CORS
-const allowedOrigins = process.env.CLIENT_URL
-  ? [process.env.CLIENT_URL]
-  : ['http://localhost:3000'];
-
-app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cors({ origin: [config.clientUrl], credentials: true }));
 
 // Rate limiting for auth endpoints
 const authLimiter = rateLimit({
@@ -49,35 +37,23 @@ require('./config/passport')(passport);
 // Passport Middleware
 app.use(passport.initialize());
 
-// Mount routers
-const auth = require('./routes/auth');
-const apartments = require('./routes/apartments');
-const whatsapp = require('./routes/whatsapp');
-const bookings = require('./routes/bookings');
-const reviews = require('./routes/reviews');
-const users = require('./routes/users');
-const payments = require('./routes/payments');
-const settings = require('./routes/settings');
-const admin = require('./routes/admin');
-
-app.use('/api/v1/auth', authLimiter, auth);
-app.use('/api/v1/apartments', apartments);
-app.use('/api/v1/whatsapp', whatsapp);
-app.use('/api/v1/bookings', bookings);
-app.use('/api/v1/reviews', reviews);
-app.use('/api/v1/users', users);
-app.use('/api/v1/payments', payments);
-app.use('/api/v1/settings', settings);
-app.use('/api/v1/admin', admin);
-
-const errorHandler = require('./middleware/error');
-app.use(errorHandler);
-
-// Define a simple route
+// Health check
 app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
-const PORT = process.env.PORT || 5000;
+// Mount routers
+app.use('/api/v1/auth', authLimiter, require('./routes/auth'));
+app.use('/api/v1/apartments', require('./routes/apartments'));
+app.use('/api/v1/whatsapp', require('./routes/whatsapp'));
+app.use('/api/v1/bookings', require('./routes/bookings'));
+app.use('/api/v1/reviews', require('./routes/reviews'));
+app.use('/api/v1/users', require('./routes/users'));
+app.use('/api/v1/payments', require('./routes/payments'));
+app.use('/api/v1/settings', require('./routes/settings'));
+app.use('/api/v1/admin', require('./routes/admin'));
+
+// Error handler must be mounted after all routes
+app.use(errorHandler);
 
 module.exports = app;
