@@ -10,6 +10,7 @@ const {
   facebookCallback,
   forgotPassword,
   resetPassword,
+  verifyEmail,
 } = require('../controllers/authController');
 
 const router = express.Router();
@@ -23,6 +24,7 @@ router.put('/updatedetails', protect, updateDetails);
 router.put('/updatepassword', protect, updatePassword);
 router.post('/forgotpassword', forgotPassword);
 router.put('/resetpassword/:resettoken', resetPassword);
+router.get('/verifyemail/:token', verifyEmail);
 
 // --- Social Login Routes ---
 

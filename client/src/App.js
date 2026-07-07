@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import VerifyEmailPage from './pages/VerifyEmailPage';
 import ApartmentListPage from './pages/ApartmentListPage';
 import CreateApartmentPage from './pages/CreateApartmentPage';
 import EditApartmentPage from './pages/EditApartmentPage';
@@ -40,6 +41,7 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+            <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
             <Route path="/login-success" element={<LoginSuccessPage />} />
             <Route path="/apartments" element={<ApartmentListPage />} />
             <Route path="/apartments/:id" element={<ApartmentDetailsPage />} />

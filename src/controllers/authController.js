@@ -21,7 +21,55 @@ exports.register = asyncHandler(async (req, res, next) => {
       role,
     });
 
+    // Send a verification email. Fire-and-forget: registration succeeds even
+    // if email delivery is unavailable; the user can request a resend later.
+    try {
+      const verificationToken = user.getEmailVerificationToken();
+      await user.save({ validateBeforeSave: false });
+      const verifyUrl = `${config.clientUrl}/verify-email/${verificationToken}`;
+      sendEmail(
+        user.email,
+        'Verify your email address',
+        `
+          <h2>Welcome, ${user.name}!</h2>
+          <p>Please confirm your email address by clicking the link below (valid for 24 hours):</p>
+          <a href="${verifyUrl}">${verifyUrl}</a>
+          <p>If you did not create this account, you can ignore this email.</p>
+        `
+      );
+    } catch (err) {
+      console.error('Could not send verification email:', err.message);
+    }
+
     sendTokenResponse(user, 201, res);
+});
+
+/**
+ * @desc    Verify email address
+ * @route   GET /api/v1/auth/verifyemail/:token
+ * @access  Public
+ */
+exports.verifyEmail = asyncHandler(async (req, res, next) => {
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await User.findOne({
+    emailVerificationToken: hashedToken,
+    emailVerificationExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    return next(new ErrorResponse('Invalid or expired verification token', 400));
+  }
+
+  user.isEmailVerified = true;
+  user.emailVerificationToken = undefined;
+  user.emailVerificationExpires = undefined;
+  await user.save({ validateBeforeSave: false });
+
+  res.status(200).json({ success: true, data: 'Email verified successfully.' });
 });
 
 /**

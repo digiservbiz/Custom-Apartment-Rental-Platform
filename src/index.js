@@ -52,6 +52,7 @@ app.use('/api/v1/users', require('./routes/users'));
 app.use('/api/v1/payments', require('./routes/payments'));
 app.use('/api/v1/settings', require('./routes/settings'));
 app.use('/api/v1/admin', require('./routes/admin'));
+app.use('/api/v1/uploads', require('./routes/uploads'));
 
 // Error handler must be mounted after all routes
 app.use(errorHandler);

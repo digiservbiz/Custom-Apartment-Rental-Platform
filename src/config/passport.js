@@ -26,6 +26,8 @@ const findOrCreateSocialUser = async (providerField, profile, done) => {
       [providerField]: profile.id,
       name: profile.displayName,
       email,
+      // The provider already verified this email address
+      isEmailVerified: true,
     });
     return done(null, user);
   } catch (err) {
